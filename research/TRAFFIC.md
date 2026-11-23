@@ -1,0 +1,23 @@
+# Local road commuting — v0.14.0
+
+This milestone routes residents to finite local commercial/industrial job capacity. Building and demolishing roads changes accessibility immediately. Queries report household job access and local road volume; the traffic view shows volume against source network capacity. It does not reproduce the full native traffic simulator or change occupancy, demand or abandonment from this provisional allocation.
+
+## Original evidence
+
+- Traffic exemplar `6534284a-e7e2c2db-c9133286`: car speeds `491332e8`, capacities `a92356b3`, congestion/speed curve `a92356b9`, six-minute raw maximum `a92356ba`, car starting cost `a92356bc[1]`, traffic/population multiplier `491332e6` (2).
+- Executable `SimCity 4.exe`, SHA256 `3bc5c7fe807fe5aa24a3abb06e40f13486670bc1150612c09baf4ecedafe1a4b`: loader `716b90`; conversion `716bf0–716c1d` multiplies km/h by float `ab3390` (16.666666), divides by city tile size and stores inverse travel cost. Cardinal 16m road travel time is therefore `16*60/(1000*31)` raw minutes. `717077` reciprocates congestion speed factors. Maximum loaded at `71711a`. Display multiplier at `71732d` is not applied to this UI because its native map encoding is not yet traced.
+- 3,425 original SC4PATHS definitions compiled by `tools/enrich-traffic.mjs`. Parser supports 1.0/1.1/1.2 headers, transport, class, entry/exit, junction flags, polyline coordinates and stop paths. One elevated-rail definition is invalid: `296678f7-a966883f-080c9300` literally contains `-8.o`; preserved as a diagnostic in `path-errors.json`, not silently repaired.
+- Native car paths use transport type 1. Entry/exit sides 0/1/2/3 mean west/north/east/south; 255 is internal. Saved UV transforms rotate/mirror these sides. Source polyline lengths determine traversal cost; directed entry-side states enforce permitted turns. New roads reuse the native path definition associated with their native artwork template.
+- Residential exemplar `6534284a-e7e2c2db-69189c84`: HQ→life expectancy `6941a67f`, life expectancy→workforce `4941a92b`, initial wealth HQ properties `c929cc8d`, `6929cc92`, `4929cc97` produce baseline workforce fractions .42/.44/.46. Existing city HQ/age grids are not decoded; these are explicitly initial demographic defaults.
+
+## Reconstructed behavior and limits
+
+Households are allocated deterministically by ID to reachable, remaining job capacity using a shortest-path heap. Each household adds volume; later searches see resulting congestion. This is an initial sequential assignment, not equilibrium, daily native pathfinding cadence or saved commute replay. A large household can cross the capacity threshold in one allocation. Origin/destination lot access uses adjacent road tiles, allowing access within a footprint; half-path access cost and native commute anchor/driveway choice remain unresolved. Destination entry ends the trip before traversing its road tile. No junction-capacity modifiers, wealth/EQ job matching, pedestrian/bus/rail routing, neighbor commuters, tolls, freight, terrain slope adjustment or commute visualization vehicles yet.
+
+Saved roads retain their original permitted turns. Adding a branch beside a source straight road does not yet replace that source road's geometry/path with a junction; connect through existing junction ports or extend an open road end until source-road retopology is implemented. New roads update their own junction topology normally. Highway onramp/path complexity and multiple networks sharing one tile need further work; unsupported path tiles are counted in text state. Source population/jobs caches remain preserved, since local routing does not represent neighbor commuters or native demographic occupancy.
+
+## Validation
+
+`tools/test-traffic.mjs` verifies native constants, all bundled path counts, rotated straight and intersection transitions, disconnected networks, directed restrictions, finite job capacity, raw commute cutoff and congestion cutoff. Bundled Fulham: 498/498 road records have car paths (zero local residents, cached regional jobs retained). Making Money: 451/451 road records have car paths; baseline 743 local workers receive reachable jobs in the fixture.
+
+Ten unit groups pass. Browser verification builds a native R/C/I district, confirms local employment/road volume, disconnects and reconnects the only link, toggles traffic view, checks original day/night lot art, saves/restores/reloads and exercises legacy saves and interior-lot demolition without console errors. The standard develop-web-game client and map/build regression also pass. Browser evidence is retained in workspace `work/tests/traffic-connected.png` and `traffic-disconnected.png`.
