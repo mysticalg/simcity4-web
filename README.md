@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.13.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.13.1** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. New development uses original lot recipes, footprints, textures and static props, with density controls and population-based stage eligibility. Full demand, regional allocation and the wider simulation remain incomplete. The asset explorer has been removed.
 

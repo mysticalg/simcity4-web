@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.1 — 2026-11-23
+
+- Treat absent optional native night textures as normal empty lookups in local API mode, matching bundled loading.
+
 ## 0.13.0 — 2026-11-23
 
 - Add low/medium/high residential and commercial zoning, plus medium/high industry.

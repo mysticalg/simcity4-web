@@ -1,6 +1,6 @@
-import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.13.0';
-import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.13.0';
-import {compileGameData} from './game-data.mjs?v=0.13.0';
+import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.13.1';
+import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.13.1';
+import {compileGameData} from './game-data.mjs?v=0.13.1';
 let local=false,bundled=false,archives=[],resources=new Map(),textureIds=new Map();
 export async function openBundledSource(){const next=await openBundled();local=false;bundled=true;return next;}
 export async function openLocal(){
@@ -38,6 +38,6 @@ export async function getResource(query){
 }
 export async function getTexture(id,group){
   if(bundled)return bundledTexture(id,group);
-  if(local){const r=await fetch(`./api/texture?id=${id}&group=${group}`);if(!r.ok)return null;return decompress(new Uint8Array(await r.arrayBuffer()));}
+  if(local){const r=await fetch(`./api/texture?id=${id}&group=${group}`);if(!r.ok||r.status===204)return null;return decompress(new Uint8Array(await r.arrayBuffer()));}
   const e=resources.get([0x7ab50e44,group,id].map(hex).join('-'))||resources.get([0x7ab50e44,0x1abe787d,id].map(hex).join('-'))||textureIds.get(id);return e?readEntry(e):null;
 }

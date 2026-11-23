@@ -39,7 +39,8 @@ const server=http.createServer((req,res)=>{try{
   if(u.pathname==='/api/texture'){
     const id=Number(u.searchParams.get('id')),group=Number(u.searchParams.get('group'));
     const e=resources.get([0x7ab50e44,group,id].map(hex).join('-'))||resources.get([0x7ab50e44,0x1abe787d,id].map(hex).join('-'))||[...resources.values()].find(e=>e.type===0x7ab50e44&&e.instance===id);
-    if(!e){res.writeHead(404);res.end('Texture unavailable');return;}res.end(raw(e));return;
+    // Optional night/variant lookups may have no corresponding native texture.
+    if(!e){res.writeHead(204);res.end();return;}res.end(raw(e));return;
   }
   const p=path.resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));
   if(!p.startsWith(root+path.sep)||p.includes(path.sep+'.')){res.writeHead(403);res.end();return;}
