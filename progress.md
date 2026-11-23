@@ -39,3 +39,5 @@ User steering: regions are selectable for now; focus on city maps, build tools, 
 
 
 2026-11-23: v0.11.0 replaces new three-band growth with original stage-one lot recipes (1,733 indexed), family variants, proper contiguous footprints, road-facing rotation and native paving/garden/static-prop composition. Mixed district browser checks passed (8 lots, 23 residents/124 jobs); original day/night art inspected; save/restore and interior-footprint demolition passed with no console errors. Added v6 saves with legacy reading. Native developer demand/density/redevelopment, higher stages, timed props/effects/foundations remain unfinished. See research/LOTS.md. Full-game objective remains active.
+
+Verification update: native-lot mixed-district and map-tool mouse scripts passed at v0.11.0; saved-city query/demolition/road-access/edit persistence/region totals also passed after changing the old single-tile growth test to an actual native-sized 1x3 plot. Source stages no longer guarantee the old fixed eight residents per tile. Added a visible zoning-depth hint. All seven unit groups passed.
