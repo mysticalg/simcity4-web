@@ -1,4 +1,4 @@
-import {pathTransitions} from './traffic.mjs?v=0.16.0';
+import {pathTransitions} from './traffic.mjs?v=0.16.1';
 export const roadDirections=[[-1,0],[0,-1],[1,0],[0,1]];
 const key=(x,z)=>x+','+z;
 export const portsMask=ports=>ports.reduce((mask,v,i)=>mask|(v?1<<i:0),0);
