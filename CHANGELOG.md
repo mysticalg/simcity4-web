@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.0 — 2026-11-23
+
+- Replace flat ground colours with original grass, beach, rock and seabed artwork.
+- Render new roads with original textures for ends, bends and junctions.
+- Fill fast drag strokes continuously; add rectangular zoning, costs, footprint previews and Escape cancellation.
+- Protect roads and grown buildings from accidental replacement.
+- Match construction overlays to terrain triangles to fix clipping; improve city focus bounds.
+
 ## 0.9.0 — 2026-11-23
 
 - Preserve original developed-city treasury, taxes and utility funding.

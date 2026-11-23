@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.9.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.10.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -64,3 +64,6 @@ Version 0.8.0 connects saved-city utility records to the live graphs. The parser
 
 
 Version 0.9.0 replaces the resident/job income shortcut with a budget ledger driven by saved tax assessments, original department line items, BuildingValue and native tax arithmetic. Developed source cities preserve treasury/tax/funding; untouched templates use selected new-city starting funds. Twelve tax controls and a budget breakdown are available, and tax state persists in v5 snapshots. All 417 financial records parse, including budget 4/5 and department 9/10. Existing cached-baseline financial deltas and full live assessment, native debt/deals/fares/ordinances and tax effects on demand still need integration and native differential comparisons. See FINANCE.md.
+
+
+Version 0.10.0 prioritizes city maps/build tools/gameplay per user steering: original terrain textures and road art, continuous drag strokes, rectangular zoning/price/footprint previews, cancellation, occupied-tile protection and a terrain-triangle interpolation fix. See MAPS.md. Further region-selection work is not the immediate priority. Native lot composition, grading, stage/demand/traffic and original visual parity remain unfinished.

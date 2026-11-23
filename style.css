@@ -6,3 +6,5 @@ button:disabled{opacity:.4;cursor:default}body.loading aside{pointer-events:none
 #stats{flex-wrap:wrap;max-width:calc(100% - 50px)}
 
 #budget-totals{font-size:12px;color:#bfe3d5}.budget-row{font-size:11px;padding:4px 0;border-bottom:1px solid #31505a}#tax-controls label{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:7px 0}#tax-controls input{width:70px;margin:0}
+
+#build-hint{position:absolute;top:155px;left:26px;padding:7px 12px;background:#102c37ed;color:#deeee6;border:1px solid #7dd8a4;border-radius:4px;font-size:12px;pointer-events:none}

@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.9.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.10.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. Simulation rules and new construction buildings remain provisional implementations, not a verified translation of the original engine. The asset explorer has been removed.
 
@@ -50,3 +50,5 @@ Night lighting: select **Lighting → Night · window lights** in a city. Origin
 Water: build a powered water tower or pump, lay pipes, and choose **View water network** to inspect coverage. Water supply, funding and pipes are saved with your city. Original saved pipes and building utility supply/demand now participate in the live graphs. Neighbor utility deals and full native utility simulation remain unfinished.
 
 City budget now imports original developed-city funds, assessments, tax rates and expenses. Open **City budget** to inspect the forecast or change taxes. Live native valuation and tax effects on demand are still in progress.
+
+Map tools: drag roads/pipes continuously; drag a rectangle to zone. The outline shows footprint, cost and blocked placement. Escape cancels zoning. Original terrain and road textures are included.
