@@ -1,0 +1,7 @@
+node_modules/
+research/inventory.json
+*.dat
+*.sc4
+*.sc4model
+*.exe
+test-results/

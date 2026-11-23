@@ -1,0 +1,319 @@
+{
+  "archives": 439,
+  "entries": 232301,
+  "types": {
+    "2026960b": 80577,
+    "0a8b0e70": 12,
+    "a2e3d533": 15,
+    "e86b1eef": 438,
+    "856ddbac": 2294,
+    "5ad0e817": 42915,
+    "7ab50e44": 40549,
+    "ca027edb": 417,
+    "499b23fe": 417,
+    "6a26d049": 8,
+    "aa371c32": 417,
+    "aa313c9f": 417,
+    "a2bf1e43": 417,
+    "a2bf1de5": 417,
+    "a2bf1ddc": 417,
+    "a0d07129": 417,
+    "8a09f5f4": 417,
+    "89c49986": 417,
+    "82b9999b": 417,
+    "815b4cef": 417,
+    "6b70efad": 10,
+    "6a9335de": 417,
+    "6a3848db": 417,
+    "62f6e7cf": 417,
+    "62bf1db9": 417,
+    "62bf1daa": 417,
+    "4a232da8": 8,
+    "49b9e60a": 417,
+    "49b9e606": 417,
+    "49b9e605": 417,
+    "49b9e604": 417,
+    "49b9e602": 417,
+    "42bf1e18": 417,
+    "40d07236": 417,
+    "2a5f877d": 417,
+    "22f6e81b": 417,
+    "22f6e80c": 417,
+    "0bf606a5": 10,
+    "0990c138": 417,
+    "02bf1dfa": 417,
+    "00d0723d": 417,
+    "eac937b4": 14,
+    "ea19e825": 417,
+    "ea0a5acf": 4,
+    "e990bffc": 417,
+    "e0d07233": 417,
+    "e0d0722e": 417,
+    "ca2c2a2f": 417,
+    "c9c05c6e": 10,
+    "c9c05c5d": 6,
+    "c9bd5d4a": 8,
+    "c9b84e10": 417,
+    "c97f987c": 8,
+    "c2f6e81f": 417,
+    "c2bf1e04": 417,
+    "c2bf1dc5": 417,
+    "aa5292d7": 417,
+    "a9c05c85": 398,
+    "a9bd882d": 8,
+    "a9bc9ab6": 6,
+    "a990c08e": 417,
+    "a990c022": 417,
+    "a990bfe0": 417,
+    "a990bd10": 417,
+    "a98f9d3b": 417,
+    "a98f9d28": 10,
+    "a97f909e": 5,
+    "a7e7f929": 417,
+    "8be3753b": 10,
+    "8a22bebe": 3,
+    "89efa536": 417,
+    "89c48f47": 417,
+    "8990c12d": 417,
+    "8990c09a": 417,
+    "8990c080": 417,
+    "8990c065": 417,
+    "8990be7a": 417,
+    "896e75af": 387,
+    "896e714a": 7,
+    "6a5f8755": 417,
+    "6a1628ba": 8,
+    "6a0f82b2": 417,
+    "6990c1aa": 417,
+    "6990c04f": 417,
+    "4be372cd": 10,
+    "4a3ad3e1": 417,
+    "4a222b98": 1,
+    "4a1dbbbf": 417,
+    "4a1b664e": 417,
+    "4a1628c5": 396,
+    "4a0dd616": 417,
+    "49c05c9f": 8,
+    "49c05c8f": 8,
+    "49c05b9f": 6,
+    "49b9e603": 417,
+    "4990c013": 417,
+    "4990bd93": 417,
+    "498f9b01": 417,
+    "2990c1bc": 417,
+    "2990c142": 417,
+    "2990c05a": 417,
+    "2990bff2": 417,
+    "299062c0": 417,
+    "298f9b2d": 417,
+    "2977aa49": 8,
+    "2977aa47": 9,
+    "0bb14381": 9,
+    "0a413481": 417,
+    "0a134f24": 10,
+    "09c05c6a": 6,
+    "0990c38a": 417,
+    "0990c075": 417,
+    "0990c005": 417,
+    "0990bdd8": 417,
+    "098f964d": 417,
+    "ead4ba36": 14,
+    "ea230a28": 417,
+    "ea09d4ae": 417,
+    "e9c622d8": 417,
+    "e9a6cd3b": 417,
+    "e990c18e": 417,
+    "e990c045": 417,
+    "e990be01": 417,
+    "e98f9525": 417,
+    "ca14ca03": 417,
+    "c9c628ec": 417,
+    "c990c0a4": 417,
+    "c990c034": 417,
+    "c990bd46": 5,
+    "c98f9d4a": 10,
+    "c98f9d17": 417,
+    "aa3fe6bc": 417,
+    "aa3836fb": 417,
+    "aa2049a1": 417,
+    "a9c741b3": 417,
+    "8990c372": 417,
+    "89d9b9ee": 417,
+    "2990c1e5": 417,
+    "8a2482b9": 854,
+    "a9dd6ff4": 2085,
+    "49dd6f4c": 417,
+    "a9c8647c": 417,
+    "8a91e7e0": 417,
+    "8a91e7e3": 417,
+    "ea3ff4f5": 417,
+    "0b7d45e0": 10,
+    "ca09f543": 403,
+    "2a134f42": 2,
+    "4a5b69ed": 2,
+    "ca16374f": 1,
+    "ca15ed6b": 1,
+    "6534284a": 8959,
+    "296678f7": 3426,
+    "29a5d1ec": 1084,
+    "09adcd75": 2253,
+    "ea5118b0": 1,
+    "05342861": 388,
+    "0a5bcf4b": 32,
+    "aa5c3144": 444,
+    "ca63e2a3": 162,
+    "00000000": 330,
+    "6a5b7bf5": 7,
+    "0b8d821a": 869,
+    "7b1acfcd": 214,
+    "9d796db4": 12
+  },
+  "decoded": {
+    "5ad0e817": 42913,
+    "7ab50e44": 40525,
+    "a9dd6ff4": 417,
+    "6534284a": 8957
+  },
+  "failures": [
+    {
+      "archive": "SimCity_1.dat",
+      "tgi": "5ad0e817-badb57f1-cb93e2b4",
+      "error": "Invalid S3D section Ü½ùÁ"
+    },
+    {
+      "archive": "SimCity_1.dat",
+      "tgi": "5ad0e817-badb57f1-cb93e2c5",
+      "error": "Invalid S3D section o\u001fB"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-0a0b485e",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-a986071d",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-4a0520de",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-08f65da6",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-6a6c9dd4",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-ea05d594",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-8a05050a",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-ca131c51",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-e8ea9588",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-88f7a2ae",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-2a05bb19",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-0a0513b5",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-28eb8f94",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-e9860785",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-aa050ac2",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-0a051bfb",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-0a051e14",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-ca5cc9c0",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-ca5cc9c1",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-28f7a0e2",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-ca0505a2",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-6a05b706",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-e8f79138",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "SimCity_2.dat",
+      "tgi": "7ab50e44-891b0e1a-6a8491c4",
+      "error": "Unsupported FSH encoding 0000007b"
+    },
+    {
+      "archive": "Sku_Data\\Sku1_US\\Plugin_002_TheLivingMall.dat",
+      "tgi": "6534284a-ca386e22-04c00000",
+      "error": "Text exemplar unsupported"
+    },
+    {
+      "archive": "Sku_Data\\Sku1_US\\Plugin_002_TheLivingMall.dat",
+      "tgi": "6534284a-a8fbd372-6ac4085b",
+      "error": "Text exemplar unsupported"
+    }
+  ]
+}

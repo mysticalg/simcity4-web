@@ -1,0 +1,16 @@
+{
+  "name": "simcity4-web",
+  "version": "0.1.0",
+  "description": "Native JavaScript/WebGL SimCity 4 reconstruction research",
+  "scripts": {
+    "start": "node server.mjs",
+    "audit": "node tools/audit.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}
