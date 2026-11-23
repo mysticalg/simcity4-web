@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.1.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.2.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -18,7 +18,9 @@ The browser decodes the data itself. A local Node server can supply individual r
 
 DBPF, QFS, binary exemplars, FSH and S3D readers are in `dbpf.mjs`. The S3D reader must not trust section byte lengths: many original entries have stale lengths. It follows actual decoded section counts. Animation is currently limited to the first frame. Shader, alpha, depth, culling, view-dependent BAT geometry and lighting fidelity require more validation.
 
-Terrain heights use a two-byte version followed by float32 samples; x-major file storage is transposed into the mesh grid. Water uses a provisional 250m datum. Terrain surface colors are provisional; original terrain texture blending is absent.
+Terrain heights use a two-byte version followed by float32 samples in z-major rows (x varies fastest). An older reference described this incorrectly; saved network vertex alignment confirmed the corrected axes. Water uses a provisional 250m datum. Terrain surface colors are provisional; original terrain texture blending is absent.
+
+Version 0.2.0 reads saved buildings, follows exemplar/cohort inheritance, selects original S3D variants, places buildings using saved bounds and orientation, and renders saved network vertices/UVs and lot base textures. Fulham resolves all 530 building records and renders 498 network tiles and 986 lot tiles. Visual parity is not established. Props, flora, complete network/lot composition, camera-dependent BAT variant changes and material fidelity remain unfinished. The original city view has separate counts and disables sandbox simulation controls.
 
 Sandbox tools, buildings and simulation formulas are provisional and separate from the original city data. They must never be represented as original simulation parity.
 
@@ -26,9 +28,11 @@ Sandbox tools, buildings and simulation formulas are provisional and separate fr
 
 `npm run audit` decodes original model, texture, terrain and binary exemplar resources and writes `research/decoder-audit.json`. This report tests parsing, not visual fidelity or game parity. Local and static folder-import browser tests exercise original terrain, an original textured network model, sandbox growth, budget, pause, stepping and save/restore. Screenshots must also be inspected because WebGL context loss can produce empty captures despite correct text state.
 
+The full archive audit decoded 42,913/42,915 S3D entries, 40,525/40,549 FSH entries, all 417 full terrain fields and 8,957/8,959 binary exemplars. Remaining decoder failures are two nonstandard model sections, 24 palette FSH encodings and two text exemplars. `npm run verify-data` parsed 12,295 saved buildings, 9,343 network tiles and 28,815 lot texture tiles across the supplied regions. The median terrain-to-road height error is zero across 37,372 sampled road vertices. This is an independent consistency check of axis ordering and coordinate units, not proof of whole-game accuracy.
+
 ## Next engineering milestones
 
-1. Decode saved building and network records; resolve exemplar/cohort inheritance and model keys; reconstruct actual cities, lot textures, flora and props.
+1. Extend the saved building/network/lot rendering to flora, props, overlays and complete network meshes; handle every supplied populated city without unsupported layouts.
 2. Validate model transforms, BAT zoom/rotation variants, texture UVs, alpha and terrain orientation against native screenshots of the same saved city.
 3. Extract and document actual exemplar tunables and simulator configuration. Inspect executable routines for mechanics not expressed in resources; implement one subsystem at a time with native-game differential fixtures.
 4. Original networks and traffic/pathfinding, connected power/water systems, demand/growth, finance/tax, land value/desirability, pollution and services.

@@ -52,8 +52,43 @@ export function exemplar(a){
 export function terrain(a){
   const n=Math.sqrt((a.length-2)/4);if(!Number.isInteger(n)||![65,129,257].includes(n))throw Error('Unsupported terrain dimensions');
   const v=new DataView(a.buffer,a.byteOffset,a.byteLength),heights=new Float32Array(n*n);
-  for(let x=0;x<n;x++)for(let y=0;y<n;y++){const h=v.getFloat32(2+4*(x*n+y),true);if(!Number.isFinite(h)||Math.abs(h)>100000)throw Error('Invalid height');heights[y*n+x]=h;}
+  for(let i=0;i<n*n;i++){const h=v.getFloat32(2+4*i,true);if(!Number.isFinite(h)||Math.abs(h)>100000)throw Error('Invalid height');heights[i]=h;}
   return {n,heights};
+}
+export function savedBuildings(a){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+  while(start<a.length){
+    if(start+36>a.length)throw Error('Truncated building record');
+    const size=v.getUint32(start,true),end=start+size;if(size<82||end>a.length)throw Error('Invalid building record size');
+    const count=v.getUint32(start+32,true);let p=start+36;if(count>10000)throw Error('Invalid saved property count');
+    for(let i=0;i<count;i++){
+      const type=v.getUint8(p+12),key=v.getUint8(p+13);p+=16;
+      const stride={1:1,2:2,3:4,7:4,8:8,9:4,11:1,12:1}[type];if(!stride)throw Error('Unsupported saved property type');
+      let n=1;if(key===0x80||type===12){n=v.getUint32(p,true);p+=4;}p+=n*stride;if(p>end-46)throw Error('Saved property outside building record');
+    }
+    if(p+46!==end)throw Error('Unexpected building record layout');
+    const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true),appearance=v.getUint32(p+12,true),min=[17,21,25].map(x=>v.getFloat32(p+x,true)),max=[29,33,37].map(x=>v.getFloat32(p+x,true)),orientation=v.getUint8(p+41);
+    if(![...min,...max].every(Number.isFinite))throw Error('Invalid saved building bounds');
+    out.push({tgi:[type,group,instance].map(hex).join('-'),instance,appearance,min,max,orientation,visible:!!(a[start+19]&1)});start=end;
+  }return out;
+}
+export function savedNetworks(a){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+  while(start<a.length){
+    const size=v.getUint32(start,true),end=start+size;if(size<170||end>a.length)throw Error('Invalid network record size');
+    const count=v.getUint32(start+32,true);let p=start+36;
+    for(let i=0;i<count;i++){const type=v.getUint8(p+12),key=v.getUint8(p+13);p+=16;const stride={1:1,2:2,3:4,7:4,8:8,9:4,11:1,12:1}[type];if(!stride)throw Error('Unknown network property type');let n=1;if(key===0x80||type===12){n=v.getUint32(p,true);p+=4;}p+=n*stride;if(p>=end)throw Error('Invalid network property');}
+    const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true);p+=25;
+    const vertices=[];for(let i=0;i<4;i++){vertices.push({position:[0,4,8].map(x=>v.getFloat32(p+x,true)),uv:[12,16].map(x=>v.getFloat32(p+x,true))});p+=24;}
+    const texture=v.getUint32(p,true),wealth=v.getUint8(p+4),base=v.getUint32(p+5,true),orientation=v.getUint8(p+9);
+    out.push({tgi:[type,group,instance].map(hex).join('-'),vertices,texture,wealth,base,orientation});start=end;
+  }return out;
+}
+export function savedLotTextures(a){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+  while(start<a.length){const size=v.getUint32(start,true),end=start+size;if(size<77||end>a.length)throw Error('Invalid lot texture record');const count=v.getUint32(start+73,true);let p=start+77;if(p+count*14!==end)throw Error('Unsupported lot texture layout');
+    for(let i=0;i<count;i++){out.push({texture:v.getUint32(p,true),x:a[p+4],z:a[p+5],orientation:a[p+6],priority:a[p+7],color:[...a.subarray(p+8,p+12)]});p+=14;}start=end;
+  }return out;
 }
 function rgb565(v){return [(v>>11)*255/31,((v>>5)&63)*255/63,(v&31)*255/31,255];}
 export function fsh(a){

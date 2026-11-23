@@ -1,17 +1,20 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {decompress,terrain,s3d,fsh,hex} from './dbpf.mjs';
+import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures} from './dbpf.mjs';
 import {openLocal,importFiles,getResource,getTexture} from './data-source.mjs';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),controls=new OrbitControls(camera,canvas);scene.background=new THREE.Color(0x8daeb9);
 controls.mouseButtons={LEFT:null,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.ROTATE};controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.49;controls.minDistance=20;controls.maxDistance=12000;
 scene.add(new THREE.HemisphereLight(0xe5f5ff,0x647448,2.3));const sun=new THREE.DirectionalLight(0xfff2d4,2.4);sun.position.set(-700,1500,400);scene.add(sun);
-const cityScene=new THREE.Group(),assetScene=new THREE.Group(),lots=new THREE.Group();scene.add(cityScene,assetScene);cityScene.add(lots);assetScene.visible=false;
-let catalog,ground,water,map,cityIndex=0,mode='city',tool='inspect',hover=null,month=0,balance=100000,population=0,jobs=0,net=0,paused=true,clock=0,loading=false,modelRequest=0,activeModel=null,modelGroup=null;
+const cityScene=new THREE.Group(),assetScene=new THREE.Group(),lots=new THREE.Group(),savedCity=new THREE.Group();scene.add(cityScene,assetScene);cityScene.add(lots,savedCity);assetScene.visible=false;
+let savedCount=0,savedMissing=0,savedRequest=0,savedNetworkCount=0,savedTextureCount=0,savedView=false;
+function setSavedView(value){savedView=value;savedCity.visible=value;lots.visible=!value;$('#back-sandbox').hidden=!value;for(const id of ['pause','step','save','restore','reset'])$('#'+id).disabled=value;stats();}
+function clearSavedCity(){for(const child of savedCity.children){if(child.userData.original)continue;child.geometry?.dispose();child.material?.dispose();}savedCity.clear();}
+let catalog,ground,water,map,cityIndex=0,mode='city',tool='inspect',hover=null,month=0,balance=100000,population=0,jobs=0,net=0,paused=true,clock=0,loading=false,ready=false,modelRequest=0,activeModel=null,modelGroup=null;
 const cells=new Map(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),costs={road:10,residential:20,commercial:25,industrial:30,power:500,park:40,bulldoze:5};
 function notice(s){$('#notice').textContent=s;}
-function stats(){const stats=mode==='city'?[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]]:[['Geometry','Original S3D'],['Textures','Original FSH'],['Renderer','WebGL']];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
+function stats(){const stats=mode==='city'?(savedView?[['Original buildings',savedCount],['Original road tiles',savedNetworkCount],['Original lot tiles',savedTextureCount],['Simulation','Viewer only']]:[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]]):[['Geometry','Original S3D'],['Textures','Original FSH'],['Renderer','WebGL']];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.round(w*renderer.getPixelRatio())||canvas.height!==Math.round(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}}
 function render(){resize();controls.update();renderer.render(scene,camera);}
 function dispose(object){object.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){m.map?.dispose();m.dispose();}}});}
@@ -21,7 +24,7 @@ function clearLots(){for(const c of cells.values()){lots.remove(c.object);dispos
 async function loadTerrain(index){
   if(loading)return;loading=true;try{
     const c=catalog.cities[index],next=terrain(await resource(`archive=${c.archive}&index=${c.index}`));
-    map=next;cityIndex=index;clearLots();if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
+    map=next;cityIndex=index;clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
     const n=map.n,size=(n-1)*16,g=new THREE.PlaneGeometry(size,size,n-1,n-1);g.rotateX(-Math.PI/2);
     const pos=g.attributes.position,colors=[];
     for(let i=0;i<pos.count;i++){
@@ -52,7 +55,7 @@ function refreshCell(c){if(c.object){lots.remove(c.object);dispose(c.object);}c.
 function powered(x,z){return [...cells.values()].some(c=>c.kind==='power'&&Math.abs(c.x-x)+Math.abs(c.z-z)<=24);}
 function roadside(x,z){return [...cells.values()].some(c=>c.kind==='road'&&Math.abs(c.x-x)+Math.abs(c.z-z)<=3);}
 function place(x,z,kind=tool,free=false){
-  if(!map||loading)return false;
+  if(!map||loading||savedView)return false;
   const lim=(map.n-1)/2;if(x< -lim||z< -lim||x>=lim||z>=lim)return false;
   const h=elevation(x*16+8,z*16+8),key=x+','+z,old=cells.get(key);
   if(kind==='inspect'){notice(old?`${old.kind} (${x}, ${z}) · Stage ${old.level||0} · ${powered(x,z)?'Power available':'No power'} · ${roadside(x,z)?'Road nearby':'No road access'}`:`Tile (${x}, ${z}) · ${Math.round(h+250)} m elevation`);return false;}
@@ -91,6 +94,54 @@ async function originalModel(entry){
   }
   if(!o.children.length)throw Error('No supported triangles in this model');return {object:o,data:d,missing,triangles};
 }
+const exemplarCache=new Map(),buildingModelCache=new Map();
+async function inheritedExemplar(tgi,depth=0){
+  if(depth>20)throw Error('Cohort inheritance too deep');
+  if(!exemplarCache.has(tgi))exemplarCache.set(tgi,(async()=>{const ex=exemplar(await resource('tgi='+tgi));let parent={};if(ex.parent!=='00000000-00000000-00000000'){try{parent=await inheritedExemplar(ex.parent,depth+1);}catch{}}return {...parent,...ex.props};})());
+  return exemplarCache.get(tgi);
+}
+async function loadSavedBuildings(){
+  const city=catalog.cities[cityIndex],index=city.subfiles?.a9bd882d;if(index===undefined){notice('This city has no saved building records.');return;}
+  const ticket=++savedRequest;clearSavedCity();savedCount=savedMissing=savedNetworkCount=savedTextureCount=0;setSavedView(true);paused=true;$('#pause').textContent='Run';notice('Reading original saved buildings…');
+  try{
+    const records=savedBuildings(await resource(`archive=${city.archive}&index=${index}`)),modelsById=new Map(catalog.models.map(m=>[m.tgi,m])),size=(map.n-1)*16;
+    for(let i=0;i<records.length;i++){
+      if(ticket!==savedRequest)return;const b=records[i];if(!b.visible)continue;
+      try{
+        const props=await inheritedExemplar(b.tgi),key=props['27812821']||props['27812820'];if(!Array.isArray(key)||key.length<3)throw Error('No resolved model key');
+        const base=key[2]>>>0,variant=(base+0x400+(b.orientation%4)*0x10)>>>0,tgi=[key[0],key[1],variant].map(hex).join('-'),entry=modelsById.get(tgi)||modelsById.get(key.slice(0,3).map(hex).join('-'));if(!entry)throw Error('Model variant unavailable');
+        if(!buildingModelCache.has(entry.tgi))buildingModelCache.set(entry.tgi,originalModel(entry));const model=await buildingModelCache.get(entry.tgi);
+        if(ticket!==savedRequest)return;
+        const obj=model.object.clone(true);obj.rotation.y=-(b.orientation%4)*Math.PI/2;
+        const bb=new THREE.Box3().setFromObject(obj),center=bb.getCenter(new THREE.Vector3());obj.position.set((b.min[0]+b.max[0])/2-size/2-center.x,b.min[1]-250-bb.min.y,(b.min[2]+b.max[2])/2-size/2-center.z);
+        obj.userData={original:true,tgi:b.tgi,name:props['00000020'],record:b};savedCity.add(obj);savedCount++;
+      }catch{savedMissing++;}
+      if(i%20===0){notice(`Original buildings: ${savedCount} rendered / ${records.length} records…`);render();await new Promise(r=>setTimeout(r,0));}
+    }
+    const materialCache=new Map();
+    async function groundMaterial(id,group=0x1abe787d){const key=group+':'+id;if(!materialCache.has(key))materialCache.set(key,(async()=>{const tex=await texture(id,group);if(!tex)return null;return new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,transparent:true,alphaTest:.1,depthWrite:true,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});})());return materialCache.get(key);}
+    const ni=city.subfiles?.c9c05c6e;
+    if(ni!==undefined){
+      const networks=savedNetworks(await resource(`archive=${city.archive}&index=${ni}`));
+      for(let i=0;i<networks.length;i++){if(ticket!==savedRequest)return;const n=networks[i],mat=await groundMaterial(n.texture+4)||await groundMaterial(n.texture);if(!mat)continue;const pos=[],uv=[];
+        for(const v of n.vertices){pos.push(v.position[0]-size/2,v.position[1]-250+.1,v.position[2]-size/2);uv.push(...v.uv);}
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex([0,1,2,0,2,3]);savedCity.add(new THREE.Mesh(g,mat));savedNetworkCount++;if(i%100===0){notice(`Original roads: ${savedNetworkCount}/${networks.length}…`);await new Promise(r=>setTimeout(r,0));}
+      }
+    }
+    const ti=city.subfiles?.c97f987c;
+    if(ti!==undefined){
+      const tiles=savedLotTextures(await resource(`archive=${city.archive}&index=${ti}`));
+      for(let i=0;i<tiles.length;i++){if(ticket!==savedRequest)return;const t=tiles[i],mat=await groundMaterial(t.texture,0x0986135e);if(!mat)continue;
+        const x=t.x*16-size/2,z=t.z*16-size/2,g=new THREE.BufferGeometry(),pos=[],uv=[];
+        const corners=[[0,0],[0,16],[16,16],[16,0]],baseUV=[[0,0],[0,1],[1,1],[1,0]];
+        for(let k=0;k<4;k++){const [dx,dz]=corners[k];pos.push(x+dx,elevation(x+dx,z+dz)+.3+t.priority*.0001,z+dz);const u=baseUV[(k+(t.orientation&3))%4];uv.push(t.orientation&4?1-u[0]:u[0],u[1]);}
+        g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex([0,1,2,0,2,3]);savedCity.add(new THREE.Mesh(g,mat));savedTextureCount++;if(i%200===0){notice(`Original lot tiles: ${savedTextureCount}/${tiles.length}…`);await new Promise(r=>setTimeout(r,0));}
+      }
+    }
+    if(savedCount){const bb=new THREE.Box3().setFromObject(savedCity),center=bb.getCenter(new THREE.Vector3()),extent=bb.getSize(new THREE.Vector3()),radius=Math.max(extent.x,extent.z,500);controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(radius*.8,radius*.7,radius*.8));controls.update();}
+    notice(`${savedCount} original buildings · ${savedNetworkCount} road tiles · ${savedTextureCount} lot tiles. City rendering is partial; original simulation is not running.`);stats();render();
+  }catch(e){notice('Saved city load failed: '+e.message);}
+}
 async function showModel(){const tgi=$('#models').value,entry=catalog.models.find(m=>m.tgi===tgi);if(!entry)return;const ticket=++modelRequest;notice('Decoding original geometry and textures…');try{
   const result=await originalModel(entry);if(ticket!==modelRequest){return;}
   if(modelGroup){assetScene.remove(modelGroup);modelGroup.traverse(x=>x.geometry?.dispose());}modelGroup=result.object;assetScene.add(modelGroup);activeModel=entry;
@@ -103,14 +154,16 @@ function switchMode(next){mode=next;cityScene.visible=next==='city';assetScene.v
 function filterModels(){const q=$('#search').value.toLowerCase(),ms=catalog.models.filter(m=>(m.name+' '+m.tgi).toLowerCase().includes(q)).slice(0,600);$('#models').replaceChildren(...ms.map(m=>new Option(m.name,m.tgi)));$('#models').selectedIndex=ms.length?0:-1;}
 function pick(event){if(mode!=='city'||!ground)return null;const r=canvas.getBoundingClientRect();pointer.set((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObject(ground)[0];if(!hit)return null;return {x:Math.floor(hit.point.x/16),z:Math.floor(hit.point.z/16)};}
 let drawing=false,lastPaint='';canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drawing=true;canvas.setPointerCapture(e.pointerId);const p=pick(e);if(p){place(p.x,p.z);lastPaint=p.x+','+p.z;}});canvas.addEventListener('pointermove',e=>{hover=pick(e);if(drawing&&hover){const key=hover.x+','+hover.z;if(key!==lastPaint){place(hover.x,hover.z);lastPaint=key;}}});canvas.addEventListener('pointerup',()=>drawing=false);canvas.addEventListener('pointercancel',()=>drawing=false);canvas.addEventListener('contextmenu',e=>e.preventDefault());
-$('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));notice(`Selected ${tool}. Click or drag on terrain.`);});
+$('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setSavedView(false);tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));notice(`Sandbox selected: ${tool}. Click or drag on terrain.`);});
 $('#city-tab').onclick=()=>switchMode('city');$('#asset-tab').onclick=()=>switchMode('asset');$('#load-terrain').onclick=()=>loadTerrain(Number($('#terrain-select').value));$('#load-model').onclick=showModel;$('#models').ondblclick=showModel;$('#search').oninput=filterModels;
 $('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Run':'Pause';};$('#step').onclick=simulate;$('#reset').onclick=()=>{clearLots();notice('Sandbox cleared.');};
+$('#saved-buildings').onclick=loadSavedBuildings;
+$('#back-sandbox').onclick=()=>{setSavedView(false);notice('Returned to the experimental sandbox.');};
 $('#demo').onclick=()=>{
   if(!map)return;let center=null;const lim=(map.n-1)/2;
   for(let z=-lim+12;z<lim-12&&!center;z+=8)for(let x=-lim+12;x<lim-12;x+=8){const hs=[];for(const [dx,dz]of [[-10,-8],[10,8],[-10,8],[10,-8],[0,0]])hs.push(elevation((x+dx)*16,(z+dz)*16));if(Math.min(...hs)>3&&Math.max(...hs)-Math.min(...hs)<15){center={x,z};break;}}
   if(!center){notice('No flat dry area found for the demo district on this terrain.');return;}
-  clearLots();const {x,z}=center;for(let dx=-10;dx<=10;dx++){place(x+dx,z,'road');place(x+dx,z-5,'road');place(x+dx,z+5,'road');}for(let dz=-7;dz<=7;dz++)place(x,z+dz,'road');
+  setSavedView(false);clearLots();const {x,z}=center;for(let dx=-10;dx<=10;dx++){place(x+dx,z,'road');place(x+dx,z-5,'road');place(x+dx,z+5,'road');}for(let dz=-7;dz<=7;dz++)place(x,z+dz,'road');
   place(x+8,z+3,'power');for(let dz=-7;dz<=7;dz++)for(let dx=-9;dx<=9;dx++){if(dx===0||[0,-5,5].includes(dz)||Math.abs(dx)>7)continue;place(x+dx,z+dz,dx<0?'residential':dz<0?'commercial':'industrial');}
   place(x+8,z-3,'park');simulate();simulate();simulate();controls.target.set((x+.5)*16,elevation(x*16,z*16),(z+.5)*16);camera.position.copy(controls.target).add(new THREE.Vector3(400,380,400));controls.update();notice('Generated demo district on original terrain. These buildings and simulation rules are experimental.');
 };
@@ -118,17 +171,17 @@ $('#save').onclick=()=>{localStorage.setItem('sc4-web-sandbox-v1',JSON.stringify
 $('#restore').onclick=async()=>{try{const d=JSON.parse(localStorage.getItem('sc4-web-sandbox-v1'));if(!d||d.version!==1||!Array.isArray(d.cells)||d.cells.length>100000)throw Error('No valid saved sandbox');const i=catalog.cities.findIndex(c=>c.name===d.city);if(i<0)throw Error('Saved terrain unavailable');await loadTerrain(i);$('#terrain-select').value=i;for(const c of d.cells){if(!Number.isInteger(c.x)||!Number.isInteger(c.z)||!Object.hasOwn(costs,c.kind)||c.kind==='bulldoze')continue;if(place(c.x,c.z,c.kind,true)){const restored=cells.get(c.x+','+c.z);restored.level=Math.max(0,Math.min(3,Number(c.level)||0));refreshCell(restored);}}month=Math.max(0,Number(d.month)||0);balance=Number.isFinite(d.balance)?d.balance:100000;recount();stats();notice('Sandbox restored.');}catch(e){notice(e.message);}};
 function recount(){population=jobs=0;for(const c of cells.values()){if(c.kind==='residential')population+=c.level*8;else if(c.kind==='industrial'||c.kind==='commercial')jobs+=c.level*(c.kind==='industrial'?12:8);}}
 document.addEventListener('keydown',e=>{if(['INPUT','SELECT'].includes(e.target.tagName))return;if(e.key===' '){e.preventDefault();$('#pause').click();}if(e.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else $('#viewport').requestFullscreen();}});
-window.advanceTime=ms=>{if(!paused&&mode==='city'){clock+=ms;while(clock>=2500){simulate();clock-=2500;}}render();};
-window.render_game_to_text=()=>JSON.stringify({mode,renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading});
+window.advanceTime=ms=>{if(!paused&&mode==='city'&&!savedView){clock+=ms;while(clock>=2500){simulate();clock-=2500;}}render();};
+window.render_game_to_text=()=>JSON.stringify({mode,renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),savedView,savedBuildings:savedCount,unresolvedBuildings:savedMissing,savedNetworkTiles:savedNetworkCount,savedLotTiles:savedTextureCount,activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading:loading||!ready});
 // Deterministic hooks for verifying placement and growth on real terrain.
-window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),switchMode,showModel};
+window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),switchMode,showModel,loadSavedBuildings};
 let last=performance.now();function loop(now){const dt=Math.min(100,now-last);last=now;window.advanceTime(dt);requestAnimationFrame(loop);}requestAnimationFrame(loop);
 async function initialize(next){
   catalog=next;if(!catalog.cities.length)throw Error('No .sc4 terrain files found. Include the Regions folder.');
   $('#import-screen').hidden=true;
   $('#engine').textContent=`${catalog.archives.length} archives · ${catalog.models.length.toLocaleString()} models · WebGL`;
-  $('#terrain-select').replaceChildren(...catalog.cities.map((c,i)=>new Option(c.name.replace('City - ',''),i)));
-  filterModels();const initial=catalog.cities.findIndex(c=>/Getting Started Tutorial/.test(c.name));$('#terrain-select').value=initial<0?0:initial;await loadTerrain(initial<0?0:initial);
+  const populated=document.createElement('optgroup'),empty=document.createElement('optgroup');populated.label='Populated cities · original geometry available';empty.label='Other original terrain';catalog.cities.forEach((c,i)=>(c.subfiles?.a9bd882d?populated:empty).append(new Option(c.name.replace('City - ',''),i)));$('#terrain-select').replaceChildren(populated,empty);
+  filterModels();let initial=catalog.cities.findIndex(c=>c.name==='London/City - Fulham.sc4');if(initial<0)initial=catalog.cities.findIndex(c=>c.subfiles?.a9bd882d);if(initial<0)initial=0;$('#terrain-select').value=initial;await loadTerrain(initial);if(catalog.cities[initial].subfiles?.a9bd882d)await loadSavedBuildings();ready=true;
 }
 $('#game-files').onchange=async e=>{try{const next=await importFiles(e.target.files,s=>{$('#import-status').textContent=s;});await initialize(next);}catch(e){$('#import-status').textContent=e.message;}};
-try{const local=await openLocal();if(local)await initialize(local);else{$('#import-screen').hidden=false;$('#engine').textContent='v0.1.0 · Select your game folder';notice('Select your installed game folder to begin.');}}catch(e){$('#import-screen').hidden=false;$('#import-status').textContent=e.message;}
+try{const local=await openLocal();if(local)await initialize(local);else{$('#import-screen').hidden=false;$('#engine').textContent='v0.2.0 · Select your game folder';notice('Select your installed game folder to begin.');}}catch(e){$('#import-screen').hidden=false;$('#import-status').textContent=e.message;}

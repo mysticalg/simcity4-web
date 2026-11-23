@@ -1,10 +1,11 @@
 {
   "name": "simcity4-web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Native JavaScript/WebGL SimCity 4 reconstruction research",
   "scripts": {
     "start": "node server.mjs",
-    "audit": "node tools/audit.mjs"
+    "audit": "node tools/audit.mjs",
+    "verify-data": "node tools/verify-data.mjs"
   },
   "keywords": [],
   "author": "",
