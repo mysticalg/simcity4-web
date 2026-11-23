@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 — 2026-11-23
+
+- Preserve original developed-city treasury, taxes and utility funding.
+- Replace provisional population/job income with saved assessment-based taxes and existing department expenses.
+- Add a monthly budget breakdown and twelve persisted tax rates; include new native building values and maintenance costs.
+- Parse financial records across all 417 source saves and test native tax/expense arithmetic.
+- Live assessment, loans/deals/ordinances and tax effects on demand remain unfinished.
+
 ## 0.8.0 — 2026-11-23
 
 - Import original underground pipes and connect them to new water facilities.

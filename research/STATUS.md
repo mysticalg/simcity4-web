@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.8.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.9.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -61,3 +61,6 @@ Version 0.7.0 adds water infrastructure for new construction: original tower and
 
 
 Version 0.8.0 connects saved-city utility records to the live graphs. The parser validates all 1,483 native pipes in six cities and all 265 power-line tiles in six cities. Original lot footprints conduct power, original building exemplars contribute utility supply/demand, and saved pole endpoint references connect power-line spans. New pumps use saved pipe networks; native pipe demolition is separate from surface demolition and persists in nativeEdits. Query uses recomputed utility states rather than presenting old source flags as live simulation. Fulham fixture: 6001 generation (coal 6000 plus fire station 1), 3052 power demand, 7664 water demand, 153 pipes and zero local water producers. Neighbor utility deals are not decoded, so the saved watered flags are not treated as invented supply. Existing-city finances, native wire/pole visuals and wire editing, utility wear/pollution/source availability and exact native graph/shortage allocation remain unfinished. See SAVED-UTILITIES.md.
+
+
+Version 0.9.0 replaces the resident/job income shortcut with a budget ledger driven by saved tax assessments, original department line items, BuildingValue and native tax arithmetic. Developed source cities preserve treasury/tax/funding; untouched templates use selected new-city starting funds. Twelve tax controls and a budget breakdown are available, and tax state persists in v5 snapshots. All 417 financial records parse, including budget 4/5 and department 9/10. Existing cached-baseline financial deltas and full live assessment, native debt/deals/fares/ordinances and tax effects on demand still need integration and native differential comparisons. See FINANCE.md.
