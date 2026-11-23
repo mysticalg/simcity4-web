@@ -1,13 +1,14 @@
 {
   "name": "simcity4-web",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Native JavaScript/WebGL SimCity 4 reconstruction research",
   "scripts": {
     "start": "node server.mjs",
     "audit": "node tools/audit.mjs",
     "verify-data": "node tools/verify-data.mjs",
-    "pack-assets": "node tools/pack-assets.mjs && node tools/enrich-regions.mjs",
-    "verify-assets": "node tools/verify-assets.mjs"
+    "pack-assets": "node tools/pack-assets.mjs && node tools/enrich-regions.mjs && node tools/enrich-game-data.mjs",
+    "verify-assets": "node tools/verify-assets.mjs",
+    "test": "node tools/test-power.mjs"
   },
   "keywords": [],
   "author": "",

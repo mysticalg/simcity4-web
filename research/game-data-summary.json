@@ -1,0 +1,108 @@
+{
+  "sources": {
+    "utilities": "6534284a-e7e2c2db-c911e35b",
+    "budget": "6534284a-e7e2c2db-0bff6824",
+    "traffic": "6534284a-e7e2c2db-c9133286"
+  },
+  "initialFunds": [
+    500000,
+    200000,
+    100000
+  ],
+  "powerRadiationRadius": 2,
+  "facilities": [
+    {
+      "tgi": "6534284a-c8dbccba-1f450000",
+      "name": "Up26x8_WindPower_1F45",
+      "generation": 200,
+      "placementCost": 500,
+      "monthlyCost": 50,
+      "footprint": [
+        2,
+        1
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f430000",
+      "name": "Up64x64_NaturalGasPowerPlant_1F43",
+      "generation": 3000,
+      "placementCost": 9000,
+      "monthlyCost": 400,
+      "footprint": [
+        4,
+        4
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f4d0000",
+      "name": "Up64x64_CoalPowerPlant_1F4D",
+      "generation": 6000,
+      "placementCost": 10000,
+      "monthlyCost": 250,
+      "footprint": [
+        4,
+        4
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f420000",
+      "name": "Up64x64_OilPowerPlant_1F42",
+      "generation": 7000,
+      "placementCost": 17000,
+      "monthlyCost": 600,
+      "footprint": [
+        4,
+        4
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f470000",
+      "name": "Up64x64_WastetoEnergy_1F47",
+      "generation": 5000,
+      "placementCost": 25000,
+      "monthlyCost": 1000,
+      "footprint": [
+        4,
+        4
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f440000",
+      "name": "Up94x94_SolarPowerPlant_1F44",
+      "generation": 5000,
+      "placementCost": 30000,
+      "monthlyCost": 1000,
+      "footprint": [
+        6,
+        6
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f3f0000",
+      "name": "Up64x80_NuclearPowerPlant_1F3F",
+      "generation": 16000,
+      "placementCost": 40000,
+      "monthlyCost": 3000,
+      "footprint": [
+        4,
+        4
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f460000",
+      "name": "Up80x80_HydrogenPowerPlant_1F46",
+      "generation": 50000,
+      "placementCost": 100000,
+      "monthlyCost": 10000,
+      "footprint": [
+        5,
+        5
+      ]
+    }
+  ],
+  "growableCounts": {
+    "residential": 55,
+    "commercial": 36,
+    "industrial": 15
+  }
+}

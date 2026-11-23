@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0 — 2026-11-23
+
+- Replace new-zone building placeholders with original models and active-wealth capacity data.
+- Load eight native power facility definitions and actual costs, capacity, footprints and funding response curve.
+- Add connected circuits, transmission lines, power shortages and growth gated by connected supply/adjacent roads.
+- Add native difficulty starting funds and power funding controls; restore plant types, funding and camera.
+- Save additions separately for every city and checkpoint automatically on month/return.
+- Handle the two overlapping Timbuktu save variants through a city variant selector.
+- Version application module/index URLs so older browser caches do not load incompatible metadata.
+- Native taxes, demand, water, effects and original saved-city simulation remain unfinished.
+
 ## 0.4.0 — 2026-11-23
 
 - Start with region selection: six original regions, 417 city layouts, thumbnails, population/job totals, selection and entering/returning from cities.

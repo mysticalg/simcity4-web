@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.4.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.5.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. Simulation rules and new construction buildings remain provisional implementations, not a verified translation of the original engine. The asset explorer has been removed.
 
@@ -27,8 +27,12 @@ All browser dependencies needed by the static page are vendored; no npm installa
 - S3D vertex/index/primitive/material/first-animation-frame parsing.
 - FSH DXT1/DXT3/DXT5 and several uncompressed texture formats.
 - Native WebGL terrain and model rendering using Three.js.
-- Experimental road, residential, commercial, industrial, power, park and demolition tools.
-- Experimental growth, budget, pause, month step, browser sandbox saves and restore.
+- Road, residential, commercial, industrial, power plant, power line, park and demolition tools.
+- Original building models for new residential/commercial/industrial development and power facilities, with native capacity/consumption and facility footprint data.
+- Connected power circuits, transmission lines, isolated loads, capacity shortages and funding controls. Production, costs, two-tile radiation distance and the funding response curve come from the supplied game data; complete native distribution behavior remains unverified.
+- Eight original power facility definitions, native placement/monthly/demolition costs and native difficulty starting funds.
+- Reconstructed growth, budget, pause and month stepping. Growth rules and tax income remain provisional.
+- Separate construction saves for each city, automatic checkpoints on month/return, and restored plant types, funding and camera.
 - Visible version number; GitHub Actions publishes each main-branch update to Pages.
 
 ## Controls
@@ -37,6 +41,6 @@ Start by choosing a region and city. Left click/drag builds or queries. Right dr
 
 ## Remaining work
 
-See [research/STATUS.md](research/STATUS.md). Animated scenery, exact flora states, lot overlays, complete networks, traffic, utilities, growth, desirability, pollution, finance, education, health, services, disasters, regional simulation, advisors, missions, original interface and audio are incomplete or absent. The current simulation handles new construction; original saved city behavior is not yet ported. Browser construction saves are a separate format.
+See [research/STATUS.md](research/STATUS.md). Animated scenery/effects, exact flora states, lot composition, complete networks, traffic, water, native demand/growth, desirability, pollution, full finance, education, health, services, disasters, regional simulation, advisors, missions, original interface and audio are incomplete or absent. The windmill effect is not yet rendered; its native base model and power behavior are present. The current simulation handles new construction; original saved city behavior is not yet ported. Browser construction saves are a separate format.
 
 The repository now includes browser packs built from the supplied copy's supported resources and saved cities, at the user's request. It does not contain the executable or installer. Original game content is not covered by the code's MIT license; see [THIRD_PARTY.md](THIRD_PARTY.md).

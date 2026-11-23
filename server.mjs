@@ -3,9 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs';
+import {compileGameData} from './game-data.mjs';
 const root=path.dirname(fileURLToPath(import.meta.url));
 const game=path.resolve(process.env.SC4_DATA || path.join(root,'../../work/extracted/app'));
-const archives=[],resources=new Map(),models=[],cities=[],counts={},names=new Map();
+const archives=[],resources=new Map(),models=[],cities=[],counts={},names=new Map(),exemplarBank=new Map();
 function scan(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())scan(p);else if(/\.(dat|sc4|sc4model|sc4desc|sc4lot)$/i.test(e.name)){
   const fd=fs.openSync(p,'r'),size=fs.statSync(p).size,head=Buffer.alloc(96);fs.readSync(fd,head,0,96,0);
   if(head.toString('ascii',0,4)!=='DBPF'){fs.closeSync(fd);continue;}
@@ -20,10 +21,11 @@ function raw(e){const a=Buffer.alloc(e.size);fs.readSync(archives[e.archive].fd,
 function data(e){return decompress(raw(e));}
 if(!fs.existsSync(game)){console.error('Game data missing. Set SC4_DATA to the extracted/installed SimCity 4 folder.');process.exit(1);}
 scan(game);
+for(const e of resources.values())if([0x6534284a,0x05342861].includes(e.type))try{exemplarBank.set(e.tgi,exemplar(data(e)));}catch{}
 for(const e of resources.values())if(e.type===0x6534284a){try{const ex=exemplar(data(e)),name=ex.props['00000020'],r=ex.props['27812820']||ex.props['27812821'];if(typeof name==='string'&&Array.isArray(r)&&r.length>=3){names.set([r[0],r[1],r[2]].map(hex).join('-'),name);for(let zoom=0;zoom<5;zoom++)for(let rot=0;rot<4;rot++)names.set([r[0],r[1],r[2]+zoom*256+rot*16].map(hex).join('-'),name+` · z${zoom+1} r${rot}`);}}catch{}}
 for(const e of resources.values())if(e.type===0x5ad0e817)models.push({tgi:e.tgi,group:e.group,instance:e.instance,name:names.get(e.tgi)||e.tgi});
 for(const a of archives)if(/\.sc4$/i.test(a.name)){const e=a.entries.find(e=>e.type===0xa9dd6ff4&&e.instance===1);if(e){const meta=a.entries.find(e=>e.type===0xca027edb),preview=a.entries.find(e=>e.type===0x8a2482b9&&e.instance===0);cities.push({name:a.name.replace(/^Regions\//,''),tgi:e.tgi,archive:a.id,index:e.index,region:meta?regionView(data(meta)):null,previewIndex:preview?.index,subfiles:Object.fromEntries(a.entries.filter(e=>[0xa9bd882d,0xc9c05c6e,0xa9bc9ab6,0x49b9e602,0xc97f987c,0x2977aa47,0xa9c05c85].includes(e.type)).map(e=>[hex(e.type),e.index]))});}}
-const summary={archives:archives.map(({id,name,size,count})=>({id,name,size,count})),counts,models:models.sort((a,b)=>a.name.localeCompare(b.name)),cities};
+const summary={archives:archives.map(({id,name,size,count})=>({id,name,size,count})),counts,models:models.sort((a,b)=>a.name.localeCompare(b.name)),cities,game:compileGameData(exemplarBank)};
 fs.mkdirSync(path.join(root,'research'),{recursive:true});fs.writeFileSync(path.join(root,'research/inventory.json'),JSON.stringify(summary,null,2));
 const mime={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.ico':'image/x-icon'};
 const server=http.createServer((req,res)=>{try{

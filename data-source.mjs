@@ -1,5 +1,6 @@
-import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs';
-import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs';
+import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.5.0';
+import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.5.0';
+import {compileGameData} from './game-data.mjs?v=0.5.0';
 let local=false,bundled=false,archives=[],resources=new Map(),textureIds=new Map();
 export async function openBundledSource(){const next=await openBundled();local=false;bundled=true;return next;}
 export async function openLocal(){
@@ -20,14 +21,14 @@ export async function importFiles(files,onProgress=()=>{}){
     }catch(e){onProgress(`Skipping ${file.name}: ${e.message}`);}
     if(k%8===0){onProgress(`Indexing your files: ${k+1}/${selected.length}`);await new Promise(r=>setTimeout(r,0));}
   }
-  const exemplars=[...resources.values()].filter(e=>e.type===0x6534284a);
+  const exemplars=[...resources.values()].filter(e=>[0x6534284a,0x05342861].includes(e.type)),bank=new Map();
   for(let i=0;i<exemplars.length;i++){
-    try{const ex=exemplar(await getResource('tgi='+exemplars[i].tgi)),name=ex.props['00000020'],key=ex.props['27812820']||ex.props['27812821'];if(typeof name==='string'&&Array.isArray(key)&&key.length>=3){names.set(key.slice(0,3).map(hex).join('-'),name);for(let zoom=0;zoom<5;zoom++)for(let rot=0;rot<4;rot++)names.set([key[0],key[1],key[2]+zoom*256+rot*16].map(hex).join('-'),name+` · z${zoom+1} r${rot}`);}}catch{}
+    try{const ex=exemplar(await getResource('tgi='+exemplars[i].tgi));bank.set(exemplars[i].tgi,ex);const name=ex.props['00000020'],key=ex.props['27812820']||ex.props['27812821'];if(typeof name==='string'&&Array.isArray(key)&&key.length>=3){names.set(key.slice(0,3).map(hex).join('-'),name);for(let zoom=0;zoom<5;zoom++)for(let rot=0;rot<4;rot++)names.set([key[0],key[1],key[2]+zoom*256+rot*16].map(hex).join('-'),name+` · z${zoom+1} r${rot}`);}}catch{}
     if(i%200===0){onProgress(`Reading model names: ${i}/${exemplars.length}`);await new Promise(r=>setTimeout(r,0));}
   }
   for(const e of resources.values())if(e.type===0x5ad0e817)models.push({tgi:e.tgi,group:e.group,instance:e.instance,name:names.get(e.tgi)||e.tgi});
   if(!archives.length)throw Error('No supported game archives found. Select the installed or extracted SimCity 4 folder.');
-  return {archives:archives.map(({id,name,size,count})=>({id,name,size,count})),counts,models:models.sort((a,b)=>a.name.localeCompare(b.name)),cities};
+  return {archives:archives.map(({id,name,size,count})=>({id,name,size,count})),counts,models:models.sort((a,b)=>a.name.localeCompare(b.name)),cities,game:compileGameData(bank)};
 }
 async function readEntry(e){if(!e)throw Error('Resource unavailable');const a=archives[e.archive],b=await a.file.slice(e.offset,e.offset+e.size).arrayBuffer();return decompress(new Uint8Array(b));}
 export async function getResource(query){

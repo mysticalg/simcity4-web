@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.4.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.5.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -29,6 +29,8 @@ Sandbox tools, buildings and simulation formulas are provisional and separate fr
 Version 0.4.0 starts at region selection and removes the asset explorer UI. Original CA027EDB metadata supplies city coordinates, dimensions, residents and commercial/industrial jobs. Native saved thumbnails supply previews. All six regions and 417 cities are selectable. Existing geometry remains visible while constructing additions, and saved population/jobs establish the displayed baseline; existing city behavior is still static and not a working port of its simulation. Construction saves currently preserve additions only.
 
 At the user's explicit request, 141,907 supported resources and saved-city resources are packaged under assets/. The executable/installer are excluded. There are 94 content-hashed gzip packs, approximately 674 MB, plus approximately 19 MB of region previews. All 775,475,608 packed payload bytes were independently compared to source resources without mismatches. The default city's resources occupy one 3.7 MB pack. The browser verifies SHA-256 and decoded lengths and fetches packs on demand. The user's asset-inclusion request supersedes the earlier choice to exclude assets.
+
+Version 0.5.0 advances new-city gameplay: native growable models and active-wealth capacities, eight native power facility definitions, correct footprints and facility costs, connected transmission lines, capacity/funding response, adjacent-road/power-gated growth, difficulty starting funds and per-city construction saves. The graph, growth stage selection and tax income remain reconstructed/provisional. Original city occupants are a baseline and are not simulated by this new-construction loop. The original Wind model is only its static base: the native windmill effect is still missing. Full native lot composition, water, desirability, demand, education, traffic, aging and full finances remain outstanding. See POWER.md for evidence and explicit limits.
 
 ## Validation
 
