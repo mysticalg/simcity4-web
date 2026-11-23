@@ -1279,5 +1279,160 @@
       "score": 0,
       "source": "Berlin/City - Konradshohe.sc4"
     }
+  },
+  "terraforming": {
+    "minHeight": 20,
+    "maxHeight": 2500,
+    "brushes": {
+      "raise": {
+        "tgi": "6534284a-6a01fc2a-ea33e2fd",
+        "name": "MayorMountainHill",
+        "costs": [
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "components": [
+          {
+            "texture": 1785503188,
+            "widths": [
+              60,
+              60,
+              60,
+              60,
+              60
+            ],
+            "strengths": [
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582
+            ],
+            "base": 0,
+            "operation": 0
+          },
+          {
+            "texture": 3917875077,
+            "widths": [
+              32,
+              32,
+              32,
+              32,
+              32
+            ],
+            "strengths": [
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582,
+              0.009999999776482582
+            ],
+            "base": 0,
+            "operation": 2
+          }
+        ]
+      },
+      "lower": {
+        "tgi": "6534284a-6a01fc2a-0a33e37b",
+        "name": "MayorValleyDefault",
+        "costs": [
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "components": [
+          {
+            "texture": 3908538680,
+            "widths": [
+              48,
+              48,
+              48,
+              48,
+              48
+            ],
+            "strengths": [
+              0.004999999888241291,
+              0.004999999888241291,
+              0.004999999888241291,
+              0.004999999888241291,
+              0.004999999888241291
+            ],
+            "base": 255,
+            "operation": 0
+          }
+        ]
+      },
+      "level": {
+        "tgi": "6534284a-6a01fc2a-4a524342",
+        "name": "MayorLevelBrush",
+        "costs": [
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "components": [
+          {
+            "texture": 687317218,
+            "widths": [
+              48,
+              48,
+              48,
+              48,
+              48
+            ],
+            "strengths": [
+              3,
+              3,
+              3,
+              3,
+              3
+            ],
+            "base": 0,
+            "operation": 5
+          }
+        ]
+      }
+    },
+    "masks": {
+      "687317218": {
+        "tgi": "7ab50e44-891b0e1a-28f7a0e2",
+        "width": 64,
+        "height": 64,
+        "min": 0,
+        "max": 255,
+        "sha256": "d4dc4252c57724b13648c5b0330b5b340b3ac9109785c103cc3d467a1ecae5ec"
+      },
+      "1785503188": {
+        "tgi": "7ab50e44-891b0e1a-6a6c9dd4",
+        "width": 64,
+        "height": 64,
+        "min": 0,
+        "max": 255,
+        "sha256": "62a78d0dccb291b20a7a853ca3a2b8ae5291a5ab35d63f8c79e1d40d3a9d5096"
+      },
+      "3908538680": {
+        "tgi": "7ab50e44-891b0e1a-e8f79138",
+        "width": 64,
+        "height": 64,
+        "min": 0,
+        "max": 255,
+        "sha256": "4d96eab2e63d0b4f753877abd669451aab4e0c83cc11d55f2fafe4ec3647abc6"
+      },
+      "3917875077": {
+        "tgi": "7ab50e44-891b0e1a-e9860785",
+        "width": 64,
+        "height": 64,
+        "min": 3,
+        "max": 255,
+        "sha256": "5bc61064213a1ac18bdcbbef9e2ede497aa6d63ebe21c49c7a2fcf8311e33c77"
+      }
+    }
   }
 }

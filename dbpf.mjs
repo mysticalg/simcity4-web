@@ -151,7 +151,8 @@ export function fsh(a){
   }else{
     for(let k=0;k<w*h;k++){
       let c;
-      if(fmt===0x7d||fmt===0x7f){c=[a[s+2],a[s+1],a[s],fmt===0x7d?a[s+3]:255];s+=fmt===0x7d?4:3;}
+      if(fmt===0x7b){const gray=a[s++];c=[gray,gray,gray,255];}
+      else if(fmt===0x7d||fmt===0x7f){c=[a[s+2],a[s+1],a[s],fmt===0x7d?a[s+3]:255];s+=fmt===0x7d?4:3;}
       else{const x=v.getUint16(s,true);s+=2;if(fmt===0x78)c=rgb565(x);else if(fmt===0x7e)c=[((x>>10)&31)*255/31,((x>>5)&31)*255/31,(x&31)*255/31,(x&0x8000)?255:0];else if(fmt===0x6d)c=[((x>>8)&15)*17,((x>>4)&15)*17,(x&15)*17,(x>>12)*17];else throw Error('Unsupported FSH encoding '+hex(fmt));}rgba.set(c,k*4);
     }
   }return {w,h,rgba,fmt};

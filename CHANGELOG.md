@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.0 — 2026-11-23
+
+- Add Raise, Lower and Level terrain tools using original brush masks and definitions.
+- Preview brush footprints and costs; support holding and continuous strokes.
+- Update terrain normals, raycast bounds and shoreline/cliff shading after edits.
+- Protect occupied ground and preserve map edits in version-7 saves.
+- Decode native grayscale FSH masks and batch repeated brush rendering.
+- Native scheduling, construction grading and neighbour-edge reconciliation remain unfinished.
+
 ## 0.11.0 — 2026-11-23
 
 - Develop residential, commercial and dirty-industrial zones into original stage-one lot recipes.

@@ -70,3 +70,5 @@ Version 0.10.0 prioritizes city maps/build tools/gameplay per user steering: ori
 
 
 Version 0.11.0 implements original growable lot composition for initial R/C/dirty-industrial stage-one growth. Proper footprints, textures, static props, source building families and road-facing orientation replace bare one-tile new buildings; recipe/orientation/footprint state persists in v6 saves. Selection/demand/density/stage progression and several object/effect types remain reconstructed or missing. See LOTS.md. Full game parity is not achieved.
+
+Version 0.12.0 adds mayor terrain editing with original masks, native operation evidence, sparse terrain saves, live geometry/shoreline updates and occupied-land protection. See TERRAIN-TOOLS.md for callback addresses, verification and limits. Timing, sampling, locking and smoothing scheduling still have reconstructed behavior. Native construction grading, edge reconciliation and full simulation remain unfinished. The full-game objective remains active.
