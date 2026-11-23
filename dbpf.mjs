@@ -74,7 +74,7 @@ export function savedBuildings(a){
     if(p+46!==end)throw Error('Unexpected building record layout');
     const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true),appearance=v.getUint32(p+12,true),min=[17,21,25].map(x=>v.getFloat32(p+x,true)),max=[29,33,37].map(x=>v.getFloat32(p+x,true)),orientation=v.getUint8(p+41);
     if(![...min,...max].every(Number.isFinite))throw Error('Invalid saved building bounds');
-    out.push({tgi:[type,group,instance].map(hex).join('-'),instance,appearance,min,max,orientation,visible:!!(a[start+19]&1)});start=end;
+    out.push({id:'building:'+start,tgi:[type,group,instance].map(hex).join('-'),instance,appearance,min,max,orientation,visible:!!(a[start+19]&1)});start=end;
   }return out;
 }
 export function savedNetworks(a){
@@ -86,7 +86,8 @@ export function savedNetworks(a){
     const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true);p+=25;
     const vertices=[];for(let i=0;i<4;i++){vertices.push({position:[0,4,8].map(x=>v.getFloat32(p+x,true)),uv:[12,16].map(x=>v.getFloat32(p+x,true))});p+=24;}
     const texture=v.getUint32(p,true),wealth=v.getUint8(p+4),base=v.getUint32(p+5,true),orientation=v.getUint8(p+9);
-    out.push({tgi:[type,group,instance].map(hex).join('-'),vertices,texture,wealth,base,orientation});start=end;
+    const crossings=[],crossingCount=a[p+12]+1;for(let i=0;i<crossingCount;i++){const q=p+13+i*5;if(q+5>end)throw Error('Invalid network crossings');crossings.push({type:a[q],west:a[q+1],north:a[q+2],east:a[q+3],south:a[q+4]});}
+    out.push({id:'network:'+start,tgi:[type,group,instance].map(hex).join('-'),vertices,texture,wealth,base,orientation,crossings});start=end;
   }return out;
 }
 export function savedLotTextures(a){
@@ -100,7 +101,7 @@ export function savedScenery(a,flora=false){
   while(start<a.length){const size=v.getUint32(start,true),end=start+size;if(size<(flora?78:88)||end>a.length)throw Error('Invalid scenery record');const count=v.getUint32(start+32,true);let p=start+36;
     for(let i=0;i<count;i++){const type=v.getUint8(p+12),key=v.getUint8(p+13);p+=16;const stride={1:1,2:2,3:4,7:4,8:8,9:4,11:1,12:1}[type];if(!stride)throw Error('Unsupported scenery property');let n=1;if(key===0x80||type===12){n=v.getUint32(p,true);p+=4;}p+=n*stride;if(p>=end)throw Error('Invalid scenery property');}
     const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true),min=[16,20,24].map(x=>v.getFloat32(p+x,true)),max=flora?min:[28,32,36].map(x=>v.getFloat32(p+x,true)),orientation=a[p+(flora?37:40)];
-    out.push({tgi:[type,group,instance].map(hex).join('-'),min,max,orientation,state:flora?a[p+36]:a[p+41],visible:!!(a[start+19]&1),flora});start=end;
+    out.push({id:(flora?'flora:':'prop:')+start,tgi:[type,group,instance].map(hex).join('-'),min,max,orientation,state:flora?a[p+36]:a[p+41],visible:!!(a[start+19]&1),flora});start=end;
   }return out;
 }
 function rgb565(v){return [(v>>11)*255/31,((v>>5)&63)*255/63,(v&31)*255/31,255];}

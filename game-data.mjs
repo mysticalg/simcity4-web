@@ -1,5 +1,5 @@
 // Values are read from the user's archives at runtime, never bundled as assets.
-import {hex} from './dbpf.mjs?v=0.5.1';
+import {hex} from './dbpf.mjs?v=0.6.0';
 export const IDS={utilities:'6534284a-e7e2c2db-c911e35b',budget:'6534284a-e7e2c2db-0bff6824',traffic:'6534284a-e7e2c2db-c9133286'};
 const array=x=>Array.isArray(x)?x:[x];
 const number=(x,fallback=0)=>Number.isFinite(Number(x))?Number(x):fallback;

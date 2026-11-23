@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.5.1** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.6.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. Simulation rules and new construction buildings remain provisional implementations, not a verified translation of the original engine. The asset explorer has been removed.
 
@@ -44,3 +44,5 @@ Start by choosing a region and city. Left click/drag builds or queries. Right dr
 See [research/STATUS.md](research/STATUS.md). Animated scenery/effects, exact flora states, lot composition, complete networks, traffic, water, native demand/growth, desirability, pollution, full finance, education, health, services, disasters, regional simulation, advisors, missions, original interface and audio are incomplete or absent. The windmill effect is not yet rendered; its native base model and power behavior are present. The current simulation handles new construction; original saved city behavior is not yet ported. Browser construction saves are a separate format.
 
 The repository now includes browser packs built from the supplied copy's supported resources and saved cities, at the user's request. It does not contain the executable or installer. Original game content is not covered by the code's MIT license; see [THIRD_PARTY.md](THIRD_PARTY.md).
+
+Night lighting: select **Lighting → Night · window lights** in a city. Original transparent night overlays illuminate individual windows and fixtures. Day/Night choice is remembered. Physical light spill and native power-based lighting are still pending.

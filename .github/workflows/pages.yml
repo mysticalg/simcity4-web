@@ -18,10 +18,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+      - name: Verify game state
+        run: |
+          node tools/test-power.mjs
+          node tools/test-imported-city.mjs
       - name: Assemble browser files
         run: |
           mkdir -p _site
-          cp index.html style.css app.mjs dbpf.mjs data-source.mjs bundled-assets.mjs regions.mjs game-data.mjs power.mjs _site/
+          cp index.html style.css app.mjs dbpf.mjs data-source.mjs bundled-assets.mjs regions.mjs game-data.mjs power.mjs city-state.mjs _site/
           cp -R vendor _site/
           cp -R assets _site/
           touch _site/.nojekyll

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-11-23
+
+- Light individual windows and fixtures using original transparent night textures; add a remembered Day/Night selector.
+- Query and bulldoze original saved lots and transport tiles, preserving edits across saves.
+- Connect new development to original saved roads; update region totals after local changes.
+- Clear native natural scenery for new construction and prevent overlap with existing lots/networks.
+- Validate native lot parsing, ownership, demolition costs and edit persistence in deployment checks.
+
 ## 0.5.1 — 2026-11-23
 
 - Reset the region screen scroll position when opening a region, keeping its heading and navigation visible on shorter windows.

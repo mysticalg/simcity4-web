@@ -1,6 +1,6 @@
-import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.5.1';
-import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.5.1';
-import {compileGameData} from './game-data.mjs?v=0.5.1';
+import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.6.0';
+import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.6.0';
+import {compileGameData} from './game-data.mjs?v=0.6.0';
 let local=false,bundled=false,archives=[],resources=new Map(),textureIds=new Map();
 export async function openBundledSource(){const next=await openBundled();local=false;bundled=true;return next;}
 export async function openLocal(){
@@ -17,7 +17,7 @@ export async function importFiles(files,onProgress=()=>{}){
       const entries=readIndex(fake,Math.max(file.size,fake.length)).entries,id=archives.length,name=(file.webkitRelativePath||file.name).replace(/^[^/]+\//,'');
       archives.push({file,id,name,size:file.size,count:entries.length,entries});
       entries.forEach((e,i)=>{e.archive=id;e.index=i;resources.set(e.tgi,e);counts[hex(e.type)]=(counts[hex(e.type)]||0)+1;if(e.type===0x7ab50e44)textureIds.set(e.instance,e);});
-      if(/\.sc4$/i.test(name)){const e=entries.find(e=>e.type===0xa9dd6ff4&&e.instance===1);if(e){const meta=entries.find(e=>e.type===0xca027edb),preview=entries.find(e=>e.type===0x8a2482b9&&e.instance===0);cities.push({name:name.replace(/^Regions\//,''),tgi:e.tgi,archive:id,index:e.index,region:meta?regionView(await readEntry(meta)):null,previewIndex:preview?.index,subfiles:Object.fromEntries(entries.filter(e=>[0xa9bd882d,0xc9c05c6e,0xa9bc9ab6,0x49b9e602,0xc97f987c,0x2977aa47,0xa9c05c85].includes(e.type)).map(e=>[hex(e.type),e.index]))});}}
+      if(/\.sc4$/i.test(name)){const e=entries.find(e=>e.type===0xa9dd6ff4&&e.instance===1);if(e){const meta=entries.find(e=>e.type===0xca027edb),preview=entries.find(e=>e.type===0x8a2482b9&&e.instance===0);cities.push({name:name.replace(/^Regions\//,''),tgi:e.tgi,archive:id,index:e.index,region:meta?regionView(await readEntry(meta)):null,previewIndex:preview?.index,subfiles:Object.fromEntries(entries.filter(e=>[0xa9bd882d,0xc9c05c6e,0xa9bc9ab6,0x49b9e602,0xc97f987c,0x2977aa47,0xa9c05c85,0xc9bd5d4a].includes(e.type)).map(e=>[hex(e.type),e.index]))});}}
     }catch(e){onProgress(`Skipping ${file.name}: ${e.message}`);}
     if(k%8===0){onProgress(`Indexing your files: ${k+1}/${selected.length}`);await new Promise(r=>setTimeout(r,0));}
   }

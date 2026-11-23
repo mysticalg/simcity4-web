@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.5.1. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.6.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -48,3 +48,10 @@ The full archive audit decoded 42,913/42,915 S3D entries, 40,525/40,549 FSH entr
 6. Full scenario playthroughs, long-term simulation comparisons and browser performance verification before claiming a working full version.
 
 The full-game objective remains active. Completing any one release above does not complete that objective.
+
+
+2026-11-23 v0.6.0: Added native window-local night lighting. S3D day material FSH IDs use the corresponding ID with bit 0x8000 set for the native night overlay. Decoded source samples confirm transparent walls and lit window/fixture pixels; 12,878 matching texture pairs are already bundled. The shader dims day surfaces and composites the native overlay using its alpha while preserving the daytime silhouette. A Day/Night selector persists locally. This is surface emission; physical window light spill, native automatic time-of-day and native power-driven night states are not implemented.
+
+Also integrated native saved lot ownership, Query and Bulldoze, original road access for new zones, natural scenery clearing and persistent native edits. Fulham checks cover 661 lots, 530 buildings, 498 roads, mouse query/demolition, road-dependent growth and reload persistence. Job changes use removed lots' saved capacity as deltas from the cached region total; this is not the full native occupancy simulation (Fulham lot industrial capacities sum to 4401, versus cached region total 4526). Region totals reflect local changes. Bundled city resources were already present; index metadata now exposes the lot subfile. Full game parity remains unfinished.
+
+Validation: native power and imported-city unit checks; browser region flow, power/build/save/reload, native edit persistence, day/night shader rendering, selection persistence and screenshots. Native window overlays were inspected against daytime images. Remaining: demand, water, traffic, taxes, effects/animation, full native simulation and lighting power states.
