@@ -2,12 +2,135 @@
   "sources": {
     "utilities": "6534284a-e7e2c2db-c911e35b",
     "budget": "6534284a-e7e2c2db-0bff6824",
-    "traffic": "6534284a-e7e2c2db-c9133286"
+    "traffic": "6534284a-e7e2c2db-c9133286",
+    "pipes": "6534284a-084344e0-095117db"
   },
   "initialFunds": [
     500000,
     200000,
     100000
+  ],
+  "waterFacilities": [
+    {
+      "tgi": "6534284a-c8dbccba-1f4a0000",
+      "name": "Uw15x15_WaterTower_1F4A",
+      "model": [
+        1523640343,
+        3134937073,
+        524943360
+      ],
+      "size": [
+        15,
+        35,
+        15
+      ],
+      "wealth": 2,
+      "powerGenerated": 0,
+      "powerConsumed": 1,
+      "waterProduced": 2400,
+      "waterSource": 2,
+      "waterConsumed": 0,
+      "monthlyCost": 50,
+      "plopCost": 150,
+      "bulldozeCost": 10,
+      "capacity": {
+        "residential": 0,
+        "commercial": 0,
+        "industrial": 0
+      },
+      "capacityByType": {},
+      "source": "original exemplar",
+      "label": "Water tower",
+      "footprint": [
+        1,
+        1
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-1f490000",
+      "name": "Uw14x14_WaterPumpingStation_1F49",
+      "model": [
+        1523640343,
+        3134937073,
+        524877824
+      ],
+      "size": [
+        14,
+        15,
+        14
+      ],
+      "wealth": 2,
+      "powerGenerated": 0,
+      "powerConsumed": 3,
+      "waterProduced": 20000,
+      "waterSource": 2,
+      "waterConsumed": 0,
+      "monthlyCost": 350,
+      "plopCost": 1400,
+      "bulldozeCost": 100,
+      "capacity": {
+        "residential": 0,
+        "commercial": 0,
+        "industrial": 0
+      },
+      "capacityByType": {},
+      "source": "original exemplar",
+      "label": "Water pump",
+      "footprint": [
+        1,
+        1
+      ]
+    },
+    {
+      "tgi": "6534284a-c8dbccba-03870000",
+      "name": "Uw32x14_LargeWaterPumpingStation_0387",
+      "model": [
+        1523640343,
+        3134937073,
+        59179008
+      ],
+      "size": [
+        31.5,
+        15,
+        13
+      ],
+      "wealth": 2,
+      "powerGenerated": 0,
+      "powerConsumed": 33,
+      "waterProduced": 200000,
+      "waterSource": 2,
+      "waterConsumed": 0,
+      "monthlyCost": 3150,
+      "plopCost": 15400,
+      "bulldozeCost": 500,
+      "capacity": {
+        "residential": 0,
+        "commercial": 0,
+        "industrial": 0
+      },
+      "capacityByType": {},
+      "source": "original exemplar",
+      "label": "Large water pump",
+      "footprint": [
+        2,
+        1
+      ]
+    }
+  ],
+  "waterPipeRadius": 7,
+  "waterPipeCost": 5,
+  "waterPipeMonthlyCost": 0.10000000149011612,
+  "waterFundingCurve": [
+    0,
+    0,
+    50,
+    30,
+    90,
+    80,
+    100,
+    100,
+    120,
+    110
   ],
   "powerRadiationRadius": 2,
   "facilities": [

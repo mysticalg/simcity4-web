@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 — 2026-11-23
+
+- Add original water tower and two water pump definitions/models with power-dependent output and water funding.
+- Build and remove underground pipes without replacing roads or buildings; inspect connected service coverage in Water view.
+- Track native building water consumption, water facility upkeep and pipe maintenance.
+- Preserve pipes and water settings in construction saves; continue loading older saves.
+- Add water graph/data tests to deployment checks. Existing native saved-city water systems are not yet simulated.
+
 ## 0.6.0 — 2026-11-23
 
 - Light individual windows and fixtures using original transparent night textures; add a remembered Day/Night selector.

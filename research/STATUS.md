@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.6.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.7.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -55,3 +55,6 @@ The full-game objective remains active. Completing any one release above does no
 Also integrated native saved lot ownership, Query and Bulldoze, original road access for new zones, natural scenery clearing and persistent native edits. Fulham checks cover 661 lots, 530 buildings, 498 roads, mouse query/demolition, road-dependent growth and reload persistence. Job changes use removed lots' saved capacity as deltas from the cached region total; this is not the full native occupancy simulation (Fulham lot industrial capacities sum to 4401, versus cached region total 4526). Region totals reflect local changes. Bundled city resources were already present; index metadata now exposes the lot subfile. Full game parity remains unfinished.
 
 Validation: native power and imported-city unit checks; browser region flow, power/build/save/reload, native edit persistence, day/night shader rendering, selection persistence and screenshots. Native window overlays were inspected against daytime images. Remaining: demand, water, traffic, taxes, effects/animation, full native simulation and lighting power states.
+
+
+Version 0.7.0 adds water infrastructure for new construction: original tower and two pump definitions/models, power-dependent output, connected underground pipes, service coverage, funding, consumption, upkeep, separate pipe demolition and version-4 construction snapshots. The surface is preserved when placing/removing pipes. A water network view batches its pipe geometry. Native parameter evidence and limits are in WATER.md. Existing saved-city pipes and utility simulation remain unported. No claim of complete native water simulation is made; native pollution, aging, disasters, source depletion and growth constraints still need integration. Current low-wealth/provisional level-1..3 growth is unchanged; water service is reported rather than imposing an invented stage requirement.
