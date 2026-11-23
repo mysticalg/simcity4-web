@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.7.0';
-import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.7.0';
-import {createRegionSelection} from './regions.mjs?v=0.7.0';
-import {growableForLevel} from './game-data.mjs?v=0.7.0';
-import {solvePower,responseCurve} from './power.mjs?v=0.7.0';
-import {solveWater} from './water.mjs?v=0.7.0';
-import {readSavedLots,ImportedCity} from './city-state.mjs?v=0.7.0';
+import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.7.1';
+import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.7.1';
+import {createRegionSelection} from './regions.mjs?v=0.7.1';
+import {growableForLevel} from './game-data.mjs?v=0.7.1';
+import {solvePower,responseCurve} from './power.mjs?v=0.7.1';
+import {solveWater} from './water.mjs?v=0.7.1';
+import {readSavedLots,ImportedCity} from './city-state.mjs?v=0.7.1';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),controls=new OrbitControls(camera,canvas);scene.background=new THREE.Color(0x8daeb9);
@@ -46,7 +46,7 @@ function clearLots(){for(const c of cells.values()){lots.remove(c.object);dispos
 async function loadTerrain(index){
   if(loading)return;loading=true;try{
     const c=catalog.cities[index],next=terrain(await resource(`archive=${c.archive}&index=${c.index}`));
-    map=next;cityIndex=index;importedCity=null;importedVisuals.clear();appliedImportedEdits=new Set();originalPopulation=c.region?.residents||0;originalJobs=(c.region?.commercialJobs||0)+(c.region?.industrialJobs||0);clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
+    map=next;cityIndex=index;powerFunding=waterFunding=100;$('#power-funding').value=$('#water-funding').value=100;$('#funding-value').textContent=$('#water-funding-value').textContent='100%';importedCity=null;importedVisuals.clear();appliedImportedEdits=new Set();originalPopulation=c.region?.residents||0;originalJobs=(c.region?.commercialJobs||0)+(c.region?.industrialJobs||0);clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
     const n=map.n,size=(n-1)*16,g=new THREE.PlaneGeometry(size,size,n-1,n-1);g.rotateX(-Math.PI/2);
     const pos=g.attributes.position,colors=[];
     for(let i=0;i<pos.count;i++){

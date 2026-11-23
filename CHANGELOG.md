@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 — 2026-11-23
+
+- Start unsaved cities at full power/water funding; preserve each saved city’s budget settings when returning.
+
 ## 0.7.0 — 2026-11-23
 
 - Add original water tower and two water pump definitions/models with power-dependent output and water funding.

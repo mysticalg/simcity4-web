@@ -1,6 +1,6 @@
 {
   "name": "simcity4-web",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Native JavaScript/WebGL SimCity 4 reconstruction research",
   "scripts": {
     "start": "node server.mjs",

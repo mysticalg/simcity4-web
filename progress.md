@@ -23,3 +23,5 @@ Validation: native power and imported-city unit checks; browser region flow, pow
 
 
 2026-11-23 v0.7.0: Added new-construction water network: native tower/pump/large-pump models and parameters, power-dependent output, funding, separate underground pipe occupancy, service coverage, demand, monthly upkeep and v4 saves. Water view uses instanced pipe geometry; pipe demolition preserves surface structures. Unit and browser checks cover cut/reconnect, coverage overlap, supply shortage, power/funding, road overlap and save/reload. See research/WATER.md. Native saved water/power systems, exact water footprint metric, density/stage selection, pollution/wear and original shortage allocation remain unverified. Next integrate native lot stage/developer constraints and demand/finance, plus existing-city utility topology. Full-game objective remains active.
+
+2026-11-23 v0.7.1: Reset utility funding to 100% when opening an unsaved city, then restore that city’s own saved settings. Browser water test now also verifies cross-city isolation.
