@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 — 2026-11-23
+
+- Reset the region screen scroll position when opening a region, keeping its heading and navigation visible on shorter windows.
+
 ## 0.5.0 — 2026-11-23
 
 - Replace new-zone building placeholders with original models and active-wealth capacity data.

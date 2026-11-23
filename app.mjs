@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.5.0';
-import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.5.0';
-import {createRegionSelection} from './regions.mjs?v=0.5.0';
-import {growableForLevel} from './game-data.mjs?v=0.5.0';
-import {solvePower,responseCurve} from './power.mjs?v=0.5.0';
+import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.5.1';
+import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.5.1';
+import {createRegionSelection} from './regions.mjs?v=0.5.1';
+import {growableForLevel} from './game-data.mjs?v=0.5.1';
+import {solvePower,responseCurve} from './power.mjs?v=0.5.1';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),controls=new OrbitControls(camera,canvas);scene.background=new THREE.Color(0x8daeb9);

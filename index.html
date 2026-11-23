@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SimCity 4 · Browser Reconstruction</title><link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=0.5.0"><script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SimCity 4 · Browser Reconstruction</title><link rel="icon" href="data:,"><link rel="stylesheet" href="style.css?v=0.5.1"><script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script></head>
 <body>
-<header><div class="mark">SC<span>4</span></div><div><h1>SimCity 4 <span>Browser reconstruction</span></h1><p>Native JavaScript / WebGL · <b id="version">v0.5.0</b></p></div><div id="engine">Loading regions…</div></header>
+<header><div class="mark">SC<span>4</span></div><div><h1>SimCity 4 <span>Browser reconstruction</span></h1><p>Native JavaScript / WebGL · <b id="version">v0.5.1</b></p></div><div id="engine">Loading regions…</div></header>
 <section id="region-screen">
   <div class="region-heading"><div><p class="eyebrow">YOUR NEXT CITY STARTS HERE</p><h2 id="region-title">Loading regions…</h2><p id="region-subtitle">Opening the bundled game data.</p></div><button id="region-back" hidden>← All regions</button></div>
   <div id="region-cards"></div>
@@ -18,5 +18,5 @@
 <div id="viewport"><canvas id="game"></canvas><div id="scene-label"></div><div id="stats"></div><div id="notice" role="status"></div><div id="badge">RECONSTRUCTION IN PROGRESS</div></div>
 </main>
 <div id="import-screen" hidden><div><h2>Optional local copy</h2><p>The hosted game includes its assets. You can also use a different installed copy here.</p><label class="file-button">Select local game folder<input id="game-files" type="file" webkitdirectory multiple></label><p id="import-status"></p></div></div>
-<script type="module" src="app.mjs?v=0.5.0"></script>
+<script type="module" src="app.mjs?v=0.5.1"></script>
 </body></html>

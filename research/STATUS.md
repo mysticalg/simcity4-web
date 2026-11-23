@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.5.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.5.1. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 

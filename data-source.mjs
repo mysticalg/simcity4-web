@@ -1,6 +1,6 @@
-import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.5.0';
-import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.5.0';
-import {compileGameData} from './game-data.mjs?v=0.5.0';
+import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs?v=0.5.1';
+import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs?v=0.5.1';
+import {compileGameData} from './game-data.mjs?v=0.5.1';
 let local=false,bundled=false,archives=[],resources=new Map(),textureIds=new Map();
 export async function openBundledSource(){const next=await openBundled();local=false;bundled=true;return next;}
 export async function openLocal(){
