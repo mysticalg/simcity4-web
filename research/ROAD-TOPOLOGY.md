@@ -2,6 +2,8 @@
 
 Adding an ordinary road branch beside an ordinary saved road now replaces that saved tile with the corresponding native T-junction/crossroad texture and lane paths. Removing the branch restores the saved road's original mesh and paths. Demolishing a saved neighbor closes the remaining ordinary road's connection; placing a new road there reconnects it. Source jobs remain available through these updated junctions.
 
+Since v0.16.0, regular streets and mixed road/street combinations also update; see STREETS.md. The restrictions below describe the initial v0.15.0 implementation.
+
 ## Source and implementation
 
 Saved network vertices, UVs and connector values come from the native `c9c05c6e` city records parsed by `dbpf.mjs`. Cardinal masks use west/north/east/south bits. Replacement templates are the same 15 full-tile, single-road native texture/UV templates compiled in `tools/enrich-map-assets.mjs`. Their matching SC4PATHS records supply directed car paths (see TRAFFIC.md).

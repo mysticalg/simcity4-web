@@ -18,7 +18,7 @@ export function speedFactor(curve,ratio){if(ratio<=curve[0])return curve[1];for(
 class Heap{a=[];push(v){let i=this.a.length;this.a.push(v);while(i){const p=(i-1)>>1;if(this.a[p].cost<=v.cost)break;this.a[i]=this.a[p];i=p;}this.a[i]=v;}pop(){const out=this.a[0],v=this.a.pop();if(this.a.length){let i=0;while(i*2+1<this.a.length){let c=i*2+1;if(c+1<this.a.length&&this.a[c+1].cost<this.a[c].cost)c++;if(this.a[c].cost>=v.cost)break;this.a[i]=this.a[c];i=c;}this.a[i]=v;}return out;}}
 export function solveTraffic(roads,lots,tuning){
  const nodes=new Map(roads.map(r=>[key(r.x,r.z),r])),volumes=new Map(),states=new Map(),routes=[],jobs=lots.filter(l=>l.jobs>0).map(l=>({...l,remaining:l.jobs})),dest=new Map();
- function access(l){const out=new Set();for(let z=l.z;z<l.z+l.depth;z++)for(let x=l.x;x<l.x+l.width;x++)for(const [dx,dz]of dirs){const k=key(x+dx,z+dz),r=nodes.get(k);if(r&&![2,12].includes(r.type))out.add(k);}return [...out];}
+ function access(l){const out=new Set();for(let z=l.z;z<l.z+l.depth;z++)for(let x=l.x;x<l.x+l.width;x++)for(const [dx,dz]of dirs){const k=key(x+dx,z+dz),r=nodes.get(k);if(r&&r.transitions.length&&![2,12].includes(r.type))out.add(k);}return [...out];}
  for(const j of jobs)for(const k of access(j)){if(!dest.has(k))dest.set(k,[]);dest.get(k).push(j);}
  let workers=0,employed=0,totalTime=0;
  for(const home of lots.filter(l=>l.residents>0).sort((a,b)=>a.id.localeCompare(b.id))){const wanted=Math.floor(home.residents*(tuning.workforce?.[Math.max(0,(home.wealth||1)-1)]??.42)),starts=access(home),assigned=[];let left=wanted;workers+=wanted;

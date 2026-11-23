@@ -1,4 +1,22 @@
 {
+  "networkTools": {
+    "road": {
+      "tgi": "6534284a-084344e0-0781214f",
+      "type": 0,
+      "cost": 10,
+      "bulldoze": 2,
+      "monthly": 0.10000000149011612,
+      "maxSlope": 35
+    },
+    "street": {
+      "tgi": "6534284a-084344e0-492a03a3",
+      "type": 3,
+      "cost": 5,
+      "bulldoze": 1,
+      "monthly": 0.05000000074505806,
+      "maxSlope": 40
+    }
+  },
   "zoning": {
     "colors": [
       4278190335,
