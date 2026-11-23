@@ -1,5 +1,5 @@
 // Definitions compiled from the original exemplar/cohort bank, including bundled data.
-import {hex} from './dbpf.mjs?v=0.12.0';
+import {hex} from './dbpf.mjs?v=0.13.0';
 export const IDS={utilities:'6534284a-e7e2c2db-c911e35b',budget:'6534284a-e7e2c2db-0bff6824',traffic:'6534284a-e7e2c2db-c9133286',pipes:'6534284a-084344e0-095117db'};
 const array=x=>Array.isArray(x)?x:[x];
 const number=(x,fallback=0)=>Number.isFinite(Number(x))?Number(x):fallback;
@@ -37,7 +37,9 @@ export function compileGameData(bank){
   }
   waterFacilities.sort((a,b)=>a.plopCost-b.plopCost);
   facilities.sort((a,b)=>a.plopCost-b.plopCost);
-  return {lots,sources:IDS,waterFacilities,waterPipeRadius:number(utilities['68f5436a']),waterFundingCurve:utilities['6a410bf2']||null,waterPipeMonthlyCost:number(utilities['8a84778f']),waterPipeCost:number(pipeTuning['4a2d49b9']),waterPipeBulldozeCost:number(pipeTuning['ea86e3b5']),initialFunds:array(budget['6a9c7718']).map(x=>number(x)),maxTaxRate:number(budget['890e0a99']),taxDifficultyMultipliers:array(budget['ebff69e7']).map(x=>number(x)),powerLineMonthlyCost:number(utilities['a9132ef9']),networkMonthlyCosts:array(traffic['6a84493e']).map(x=>number(x)),initialTaxRates:array(budget['0c032488']).map(x=>number(x)),powerRadiationRadius:number(utilities['a911e2f1']),powerFundingCurve:utilities['6911e2df']||null,roadMonthlyCost:number(array(traffic['6a84493e'])[0]),powerLineCost:number(utilities['0a5f596b']),powerPoleCost:number(utilities['4a5f5953']),facilities,growables};
+  const developers={};for(const code of [0x1010,0x1020,0x1030,0x3110,0x3120,0x3130,0x3320,0x3330,0x4100,0x4200,0x4300,0x4400]){const tgi='6534284a-67cd5fa1-'+hex(code),p=merged(tgi);developers[hex(code)]={tgi,name:p['00000020'],stageCount:number(p['87cd6360']),stages:Array.from({length:number(p['87cd6360'])},(_,i)=>p[hex(0x87cd6361+i)]||[]),waterCap:number(p['87cd6370']),powerCap:number(p['87cd6373']),fireCap:number(p['87cd6371']),parkCap:number(p['87cd6372'])};}
+  const zoningProps=merged('6534284a-e7e2c2db-e9482490'),zoning={colors:array(zoningProps['e94825b8']).map(Number),alpha:number(zoningProps['e94825b7'])/255,source:'6534284a-e7e2c2db-e9482490',costs:array(zoningProps['e94825b4']).map(Number),bulldozeCosts:array(zoningProps['e94825b5']).map(Number)};
+  return {developers,zoning,lots,sources:IDS,waterFacilities,waterPipeRadius:number(utilities['68f5436a']),waterFundingCurve:utilities['6a410bf2']||null,waterPipeMonthlyCost:number(utilities['8a84778f']),waterPipeCost:number(pipeTuning['4a2d49b9']),waterPipeBulldozeCost:number(pipeTuning['ea86e3b5']),initialFunds:array(budget['6a9c7718']).map(x=>number(x)),maxTaxRate:number(budget['890e0a99']),taxDifficultyMultipliers:array(budget['ebff69e7']).map(x=>number(x)),powerLineMonthlyCost:number(utilities['a9132ef9']),networkMonthlyCosts:array(traffic['6a84493e']).map(x=>number(x)),initialTaxRates:array(budget['0c032488']).map(x=>number(x)),powerRadiationRadius:number(utilities['a911e2f1']),powerFundingCurve:utilities['6911e2df']||null,roadMonthlyCost:number(array(traffic['6a84493e'])[0]),powerLineCost:number(utilities['0a5f596b']),powerPoleCost:number(utilities['4a5f5953']),facilities,growables};
 }
 export function growableForLevel(game,kind,level){
   let list=game?.growables?.[kind];if(!list?.length)return null;

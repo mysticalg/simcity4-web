@@ -1,14 +1,15 @@
 # SimCity 4 browser reconstruction
 
-Version **0.12.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.13.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
-**This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. New zones develop into original stage-one lots with native footprints, building families, textures and static props. Demand, higher growth stages and the wider simulation remain incomplete. The asset explorer has been removed.
+**This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. New development uses original lot recipes, footprints, textures and static props, with density controls and population-based stage eligibility. Full demand, regional allocation and the wider simulation remain incomplete. The asset explorer has been removed.
 
 ## Run
 
 - Hosted build: https://mysticalg.github.io/simcity4-web/
 - Open the hosted build directly. Its current game assets are bundled; no folder selection or upload is required.
 - Choose a region, select a city tile and click Enter city.
+- Select a zoning tool and its density. Original R/C zoning prices are §10/20/50 per tile; higher stages need enough population and, above the native cap, water. Rezoning preserves existing buildings.
 - Click or hold Raise/Lower to edit terrain. Level keeps the height where you start the stroke. Each changed application costs §10; map edits save with your city.
 - Region selection downloads the compressed index (approximately 4.0 MB) and thumbnail images. Opening Fulham adds one 3.7 MB asset pack; other city content loads on demand.
 - The complete package is approximately 696 MB including region previews. Packs are integrity checked and fetched only when needed.

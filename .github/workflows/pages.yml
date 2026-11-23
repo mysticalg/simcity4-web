@@ -28,6 +28,7 @@ jobs:
           node tools/test-map-tools.mjs
           node tools/test-lot-development.mjs
           node tools/test-terrain-tools.mjs
+          node tools/test-development.mjs
       - name: Assemble browser files
         run: |
           mkdir -p _site

@@ -1,9 +1,9 @@
-import {decompress,hex} from './dbpf.mjs?v=0.12.0';
+import {decompress,hex} from './dbpf.mjs?v=0.13.0';
 let manifest=null;const packCache=new Map();
 async function gunzip(bytes){return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());}
 async function download(url){let last;for(let attempt=0;attempt<3;attempt++){try{const r=await fetch(url,{cache:attempt?'reload':'default'});if(!r.ok)throw Error(`Asset download failed (${r.status})`);return new Uint8Array(await r.arrayBuffer());}catch(e){last=e;}}throw last;}
 export async function openBundled(){
-  const bytes=await gunzip(await download(new URL('./assets/index.bin?v=0.12.0',import.meta.url)));manifest=JSON.parse(new TextDecoder().decode(bytes));if(manifest.format!==1)throw Error('Unsupported asset package');return manifest.catalog;
+  const bytes=await gunzip(await download(new URL('./assets/index.bin?v=0.13.0',import.meta.url)));manifest=JSON.parse(new TextDecoder().decode(bytes));if(manifest.format!==1)throw Error('Unsupported asset package');return manifest.catalog;
 }
 async function pack(id){
   if(packCache.has(id)){const cached=packCache.get(id);packCache.delete(id);packCache.set(id,cached);return cached;}

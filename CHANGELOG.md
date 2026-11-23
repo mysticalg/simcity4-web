@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.0 — 2026-11-23
+
+- Add low/medium/high residential and commercial zoning, plus medium/high industry.
+- Use original zoning costs, density colours and population-based growth-stage curves.
+- Apply native water-dependent stage limits; allow higher-stage parcel redevelopment.
+- Preserve buildings during per-tile density changes and keep unused redevelopment land zoned.
+- Save mixed plot densities and tool selections in version-8 snapshots, with older-save defaults.
+- Full demand, regional allocation, wealth transitions and agricultural compound lots remain unfinished.
+
 ## 0.12.0 — 2026-11-23
 
 - Add Raise, Lower and Level terrain tools using original brush masks and definitions.
