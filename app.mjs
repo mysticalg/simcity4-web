@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedPipes,savedPowerLines,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.10.0';
-import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.10.0';
-import {createRegionSelection} from './regions.mjs?v=0.10.0';
-import {growableForLevel} from './game-data.mjs?v=0.10.0';
-import {solvePower,responseCurve} from './power.mjs?v=0.10.0';
-import {gridStroke,zoneRectangle,roadConnections,shoreDistances,surfaceHeight,terrainQuadIndices} from './map-tools.mjs?v=0.10.0';
-import {terrainMaterial} from './terrain-renderer.mjs?v=0.10.0';
-import {savedBudget,savedDepartments,savedLineItems,calculateBudget,sourceLedger,inferTaxMultiplier,TAX_CODES,TAX_LABELS,DEPARTMENTS} from './finance.mjs?v=0.10.0';
-import {solveWater} from './water.mjs?v=0.10.0';
-import {readSavedLots,ImportedCity} from './city-state.mjs?v=0.10.0';
+import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedPipes,savedPowerLines,savedLotTextures,savedScenery} from './dbpf.mjs?v=0.11.0';
+import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs?v=0.11.0';
+import {createRegionSelection} from './regions.mjs?v=0.11.0';
+import {selectDevelopment,lotPoint} from './lot-development.mjs?v=0.11.0';
+import {growableForLevel} from './game-data.mjs?v=0.11.0';
+import {solvePower,responseCurve} from './power.mjs?v=0.11.0';
+import {gridStroke,zoneRectangle,roadConnections,shoreDistances,surfaceHeight,terrainQuadIndices} from './map-tools.mjs?v=0.11.0';
+import {terrainMaterial} from './terrain-renderer.mjs?v=0.11.0';
+import {savedBudget,savedDepartments,savedLineItems,calculateBudget,sourceLedger,inferTaxMultiplier,TAX_CODES,TAX_LABELS,DEPARTMENTS} from './finance.mjs?v=0.11.0';
+import {solveWater} from './water.mjs?v=0.11.0';
+import {readSavedLots,ImportedCity} from './city-state.mjs?v=0.11.0';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),controls=new OrbitControls(camera,canvas);scene.background=new THREE.Color(0x8daeb9);
@@ -79,7 +80,7 @@ async function loadTerrain(index){
   }catch(e){notice('Terrain load failed: '+e.message);}finally{loading=false;}
 }
 function cube(group,x,y,z,w,h,d,color){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));mesh.position.set(x,y+h/2,z);group.add(mesh);return mesh;}
-function blueprint(c){return c.kind==='water'?catalog?.game?.waterFacilities.find(b=>b.tgi===(c.blueprint||selectedWaterFacility)):c.kind==='power'?catalog?.game?.facilities.find(b=>b.tgi===(c.blueprint||selectedFacility)):c.level?growableForLevel(catalog?.game,c.kind,c.level):null;}
+function blueprint(c){if(!c)return null;if(c.lot){const lot=catalog?.game?.lots?.find(l=>l.tgi===c.lot);return lot?.choices.find(b=>b.tgi===c.blueprint)||null;}return c.kind==='water'?catalog?.game?.waterFacilities.find(b=>b.tgi===(c.blueprint||selectedWaterFacility)):c.kind==='power'?catalog?.game?.facilities.find(b=>b.tgi===(c.blueprint||selectedFacility)):c.level?growableForLevel(catalog?.game,c.kind,c.level):null;}
 function key(c){return c.x+','+c.z;}
 function cellAt(x,z){return cellFootprints.get(x+','+z);}
 async function loadTemplate(bp){
@@ -93,7 +94,7 @@ function visual(c){
  if(c.kind==='road')nativeRoadVisual(c,o,h);
  if(c.kind==='powerline'){cube(o,0,0,0,.8,12,.8,0xb4ada1);cube(o,0,10,0,6,.6,.6,0x858c91);cube(o,0,11,0,.16,.16,16,0x343d3d);cube(o,0,11,0,16,.16,.16,0x343d3d);}
  if(c.kind==='park'){for(const [x,z]of [[-4,-4],[4,3],[-3,4]]){cube(o,x,0,z,1,4,1,0x756446);const tree=new THREE.Mesh(new THREE.ConeGeometry(3,8,7),new THREE.MeshLambertMaterial({color:0x2f7040}));tree.position.set(x,6,z);o.add(tree);}}
- const bp=blueprint(c);if(bp){const template=templateCache.get(bp.tgi);if(template){const mesh=template.clone(true),bb=new THREE.Box3().setFromObject(mesh),center=bb.getCenter(new THREE.Vector3());mesh.position.set(-center.x,.4-bb.min.y,-center.z);mesh.userData.shared=true;o.add(mesh);}else loadTemplate(bp).then(()=>{if(cells.get(key(c))===c)refreshCell(c);}).catch(()=>{c.modelMissing=true;});}
+ const bp=blueprint(c);if(c.lot){nativeLotVisual(c,o,h);}else if(bp){const template=templateCache.get(bp.tgi);if(template){const mesh=template.clone(true),bb=new THREE.Box3().setFromObject(mesh),center=bb.getCenter(new THREE.Vector3());mesh.position.set(-center.x,.4-bb.min.y,-center.z);mesh.userData.shared=true;o.add(mesh);}else loadTemplate(bp).then(()=>{if(cells.get(key(c))===c)refreshCell(c);}).catch(()=>{c.modelMissing=true;});}
  if(c.level&&['residential','commercial','industrial'].includes(c.kind)){const marker=cube(o,0,(bp?.size[1]||10)+2,0,2,3,2,0xffd36b);marker.name='power-warning';marker.visible=!powerGrid.states.get(key(c))?.powered;}
  return o;
 }
@@ -103,6 +104,27 @@ function nativeRoadVisual(c,o,h){
  const image=roadImages.get(art.texture);if(!image){if(!roadImageTasks.has(art.texture))roadImageTasks.set(art.texture,texture(art.texture,art.group).then(t=>{if(t){t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.needsUpdate=true;roadImages.set(art.texture,t);}return t;}));roadImageTasks.get(art.texture).then(t=>{if(t&&cells.get(key(c))===c)refreshCell(c);});}
  const p=art.corners.flatMap(([x,z])=>[x-8,elevation((c.x*16)+x,(c.z*16)+z)-h-.12,z-8]),g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(art.uv.flat(),2));g.setIndex(terrainQuadIndices(art.corners));g.computeVertexNormals();o.add(new THREE.Mesh(g,nativeLighting(new THREE.MeshBasicMaterial({map:image||null,color:image?0xffffff:0x657075,side:THREE.DoubleSide,transparent:true,alphaTest:.1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}))));
 }
+function developLot(c,plan){
+ const {lot,rotation,width,depth,building,seed}=plan;
+ for(let dz=0;dz<depth;dz++)for(let dx=0;dx<width;dx++){const part=cellAt(c.x+dx,c.z+dz);if(part){lots.remove(part.object);dispose(part.object);cells.delete(key(part));part.object=null;}}
+ Object.assign(c,{lot:lot.tgi,rotation,width,depth,blueprint:building.tgi,seed,level:lot.stage});cells.set(key(c),c);for(let dz=0;dz<depth;dz++)for(let dx=0;dx<width;dx++)cellFootprints.set((c.x+dx)+','+(c.z+dz),c);importedCity?.clearScenery(c.x,c.z,width,depth);applyImportedEdits();refreshCell(c);
+}
+const lotModelTasks=new Map();
+async function nativeLotModel(bp,orientation){
+ const id=bp.tgi+':'+orientation;if(!lotModelTasks.has(id))lotModelTasks.set(id,(async()=>{const base=bp.model,variant=(base[2]+0x400+(orientation&3)*0x10)>>>0,entry=modelsByTgi.get([base[0],base[1],variant].map(hex).join('-'))||modelsByTgi.get(base.slice(0,3).map(hex).join('-'));if(!entry)throw Error('Native lot model unavailable');const model=(await originalModel(entry)).object;templateCache.set(id,model);return model;})());return lotModelTasks.get(id);
+}
+async function nativeLotVisual(c,o,h){
+ await Promise.resolve();
+ const lot=catalog.game.lots.find(l=>l.tgi===c.lot);if(!lot)return;const q=c.rotation||0,alive=()=>cells.get(key(c))===c&&c.object===o;let count=0,missing=0;
+ for(const item of [...lot.objects].sort((a,b)=>(a.lod||0)-(b.lod||0))){if(!alive())return;try{
+  if(item.type===2){const id=item.ids[(c.seed>>>0)%item.ids.length],tex=await texture((id+4)>>>0,0x0986135e)||await texture(id,0x0986135e);if(!alive())return;if(!tex){missing++;continue;}tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());tex.needsUpdate=true;
+   // Texture objects are native 16m squares centered at their encoded x/z.
+   const corners=[[item.x-8,item.z-8],[item.x-8,item.z+8],[item.x+8,item.z+8],[item.x+8,item.z-8]],points=corners.map(([x,z])=>lotPoint(lot,q,x,z)),uv0=[[0,0],[0,1],[1,1],[1,0]],uv=uv0.map((_,i)=>{const v=uv0[(i+(item.orientation&3))%4];return item.orientation&4?[1-v[0],v[1]]:v;}),g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points.flatMap(([x,z])=>[x-c.width*8,elevation(c.x*16+x,c.z*16+z)-h-.13+(count++)*.0001,z-c.depth*8]),3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv.flat(),2));g.setIndex(terrainQuadIndices(points));g.computeVertexNormals();o.add(new THREE.Mesh(g,nativeLighting(new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,transparent:true,alphaTest:.1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}))));
+  }else if(item.type===0||item.type===1){const bp=item.type===0?blueprint(c):item.choices?.[((c.seed||0)+count++)%(item.choices?.length||1)];if(!bp)continue;const ori=((item.orientation&3)+q)&3,template=await nativeLotModel(bp,ori);if(!alive())return;const mesh=template.clone(true);mesh.rotation.y=-ori*Math.PI/2;const bb=new THREE.Box3().setFromObject(mesh),center=bb.getCenter(new THREE.Vector3()),[x,z]=lotPoint(lot,q,(item.minX+item.maxX)/2,(item.minZ+item.maxZ)/2);mesh.position.set(x-c.width*8-center.x,item.y+elevation(c.x*16+x,c.z*16+z)-h-bb.min.y,z-c.depth*8-center.z);mesh.userData.shared=true;o.add(mesh);}
+ }catch{missing++;}}
+ if(alive()){c.lotArt={textures:o.children.filter(ch=>ch.isMesh&&ch.material?.map).length,models:o.children.filter(ch=>ch.userData.shared).length,missing,skipped:lot.objects.filter(item=>![0,1,2].includes(item.type)||(item.type===1&&!item.choices?.length)).length};render();}
+}
+
 function refreshRoads(x,z){for(const[dx,dz]of[[0,0],[-1,0],[1,0],[0,-1],[0,1]]){const c=cellAt(x+dx,z+dz);if(c?.kind==='road'){if(placingBatch)changedRoads.add(key(c));else refreshCell(c);}}}
 function refreshCell(c){if(c.object){lots.remove(c.object);dispose(c.object);}c.object=visual(c);lots.add(c.object);}
 function focusCity(){const box=new THREE.Box3();if(!nativeBuildingBox.isEmpty())box.union(nativeBuildingBox);if(lots.children.length)box.union(new THREE.Box3().setFromObject(lots));if(box.isEmpty())return;const center=box.getCenter(new THREE.Vector3()),extent=box.getSize(new THREE.Vector3()),size=Math.max(extent.x,extent.z,200);controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(size*.8,size*.7,size*.8));controls.update();}
@@ -149,14 +171,14 @@ function queryImported(x,z){
 function demolishImported(x,z,free=false){
  if(!importedCity)return false;const lot=importedCity.lotAt(x,z),network=importedCity.networkAt(x,z),targets=lot?[lot.id]:network?[network.id]:importedCity.sceneryAt(x,z).map(s=>s.id);if(!targets.length)return false;
  const price=targets.reduce((sum,id)=>sum+importedCity.demolitionCost(id),0);if(!free&&balance<price){notice('Insufficient funds.');return false;}
- targets.forEach(id=>importedCity.demolish(id));if(!free)balance-=price;applyImportedEdits();syncImportedTotals();updatePower();recount();stats();persistCity();notice(`Demolished ${lot?'lot':network?'transport tile':'trees/props'} · §${price}`);return true;
+ targets.forEach(id=>importedCity.demolish(id));if(!free)balance-=price;applyImportedEdits();if(network?.road)refreshRoads(x,z);syncImportedTotals();updatePower();recount();stats();persistCity();notice(`Demolished ${lot?'lot':network?'transport tile':'trees/props'} · §${price}`);return true;
 }
 function place(x,z,kind=tool,free=false,facilityId=selectedFacility){
  if(!map||loading||savedView)return false;if(['pipe','erasepipe'].includes(kind)||(waterView&&kind==='inspect'))return placePipe(x,z,kind,free);const lim=(map.n-1)/2,old=cellAt(x,z),bp=kind==='power'?catalog?.game?.facilities.find(b=>b.tgi===facilityId):kind==='water'?catalog?.game?.waterFacilities.find(b=>b.tgi===(facilityId===selectedFacility?selectedWaterFacility:facilityId)):null,w=bp?.footprint[0]||1,d=bp?.footprint[1]||1;
  if(x< -lim||z< -lim||x+w>lim||z+d>lim)return false;
  if(kind==='inspect'&&!old&&queryImported(x,z))return false;
  if(kind==='bulldoze'&&!old&&demolishImported(x,z,free))return true;
- if(kind==='inspect'){const c=old,b=c?blueprint(c):null,state=c?powerGrid.states.get(key(c)):null;notice(c?`${b?.label||c.kind} · ${state?.powered?'Powered':state?.brownout?'Brownout':'No power'} · ${waterGrid.states.get(key(c))?.watered?'Water supplied':b?.waterConsumed?'No water supply':'No water demand'} · Demand ${b?.powerConsumed||0} · Stage ${c.level||0}`:`Tile (${x}, ${z}) · ${Math.round(elevation(x*16+8,z*16+8)+250)} m`);return false;}
+ if(kind==='inspect'){const c=old,b=c?blueprint(c):null,state=c?powerGrid.states.get(key(c)):null;notice(c?`${b?.label||c.kind} · ${state?.powered?'Powered':state?.brownout?'Brownout':'No power'} · ${waterGrid.states.get(key(c))?.watered?'Water supplied':b?.waterConsumed?'No water supply':'No water demand'} · Demand ${b?.powerConsumed||0} · ${c.lot?'Native lot stage':'Legacy growth band'} ${c.level||0} · ${c.width||1}×${c.depth||1}`:`Tile (${x}, ${z}) · ${Math.round(elevation(x*16+8,z*16+8)+250)} m`);return false;}
  if(old?.kind===kind&&kind!=='bulldoze')return false;
  for(let dz=0;dz<d;dz++)for(let dx=0;dx<w;dx++){if(kind!=='bulldoze'&&elevation((x+dx+.5)*16,(z+dz+.5)*16)<1){notice('Build on dry land.');return false;}if(kind!=='bulldoze'&&(importedCity?.lotAt(x+dx,z+dz)||importedCity?.networkAt(x+dx,z+dz))){notice('This land is occupied. Bulldoze it first.');return false;}const occupied=cellAt(x+dx,z+dz);if(occupied&&occupied!==old){notice('That footprint is occupied. Bulldoze it first.');return false;}}
  if(old&&kind!=='bulldoze'&&(old.level>0||!zoneTools.has(old.kind)||(old.width||1)>1||(old.depth||1)>1||w>1||d>1)){notice('Bulldoze the existing structure first.');return false;}
@@ -187,7 +209,7 @@ async function loadFinance(city){
  }syncTaxControls();updateBudget();
 }
 function simulate(){
- month++;updatePower();for(const c of cells.values())if(['residential','commercial','industrial'].includes(c.kind)&&powered(c.x,c.z)&&roadside(c.x,c.z)&&c.level<3){c.level++;refreshCell(c);}updatePower();recount();
+ month++;updatePower();for(const c of [...cells.values()]){if(cells.get(key(c))!==c)continue;const plan=selectDevelopment(catalog.game,c,{cellAt,hasRoad:(x,z)=>cellAt(x,z)?.kind==='road'||importedCity?.roadAt(x,z),powered});if(plan)developLot(c,plan);}updatePower();recount();
  updateBudget();balance+=net;
  notice(`Month ${month} · Power demand ${Math.round(powerGrid.demand)} / supply ${Math.round(powerGrid.supply)} · ${powerGrid.brownoutCount?'Power shortage. Add generation.':'Connect zones and plants with power lines.'}`);stats();persistCity();
 }
@@ -294,16 +316,16 @@ function citySaveKey(name){return 'sc4-web-city-v2:'+encodeURIComponent(name);}
 function persistCity(showNotice=false){
  if(!map||!catalog||$('#city-screen').hidden)return;
  const totals=importedCity?.totals()||catalog.cities[cityIndex].region,regionTotals={residents:population,commercialJobs:totals?.commercialJobs||0,industrialJobs:totals?.industrialJobs||0};for(const c of cells.values()){const b=blueprint(c);regionTotals.commercialJobs+=b?.capacity.commercial||0;regionTotals.industrialJobs+=b?.capacity.industrial||0;}
- const snapshot={version:5,taxRates,taxMultiplier,difficulty,pipes:[...pipes.values()],waterFunding,selectedWaterFacility,regionTotals,nativeEdits:[...(importedCity?.deleted||[])],city:catalog.cities[cityIndex].name,month,balance,net,initialFunds,powerFunding,selectedFacility,camera:{position:camera.position.toArray(),target:controls.target.toArray()},cells:[...cells.values()].map(({object,...c})=>c)};
+ const snapshot={version:6,taxRates,taxMultiplier,difficulty,pipes:[...pipes.values()],waterFunding,selectedWaterFacility,regionTotals,nativeEdits:[...(importedCity?.deleted||[])],city:catalog.cities[cityIndex].name,month,balance,net,initialFunds,powerFunding,selectedFacility,camera:{position:camera.position.toArray(),target:controls.target.toArray()},cells:[...cells.values()].map(({object,...c})=>c)};
  try{localStorage.setItem(citySaveKey(snapshot.city),JSON.stringify(snapshot));localStorage.setItem('sc4-web-sandbox-v1',JSON.stringify(snapshot));if(showNotice)notice('City saved.');}catch{if(showNotice)notice('Browser storage is full. The city could not be saved.');}
 }
 async function restoreConstruction(d,loadCity=true){
- if(!d||![1,2,3,4,5].includes(d.version)||!Array.isArray(d.cells)||d.cells.length>100000)throw Error('No valid city save');
+ if(!d||![1,2,3,4,5,6].includes(d.version)||!Array.isArray(d.cells)||d.cells.length>100000)throw Error('No valid city save');
  const i=catalog.cities.findIndex(c=>c.name===d.city);if(i<0)throw Error('Saved city is unavailable');
  if(loadCity&&i!==cityIndex){await loadTerrain(i);if(Object.keys(catalog.cities[i].subfiles||{}).some(k=>['a9bd882d','c9bd5d4a','c9c05c6e','a9c05c85','49c05b9f','c9c05c5d'].includes(k)))await loadSavedBuildings();}
  setSavedView(false);importedCity?.restoreEdits(d.nativeEdits||[]);applyImportedEdits();syncImportedTotals();clearLots();$('#terrain-select').value=i;powerFunding=Math.max(0,Math.min(120,Number(d.powerFunding??100)));$('#power-funding').value=powerFunding;$('#funding-value').textContent=powerFunding+'%';if(catalog.game.facilities.some(b=>b.tgi===d.selectedFacility)){selectedFacility=d.selectedFacility;$('#power-plant').value=selectedFacility;$('#power-plant').dispatchEvent(new Event('change'));}
  waterFunding=Math.max(0,Math.min(120,Number(d.waterFunding??100)));$('#water-funding').value=waterFunding;$('#water-funding-value').textContent=waterFunding+'%';if(catalog.game.waterFacilities.some(b=>b.tgi===d.selectedWaterFacility)){selectedWaterFacility=d.selectedWaterFacility;$('#water-plant').value=selectedWaterFacility;$('#water-plant').dispatchEvent(new Event('change'));}
- for(const c of d.cells){if(!Number.isInteger(c.x)||!Number.isInteger(c.z)||!Object.hasOwn(costs,c.kind)||c.kind==='bulldoze')continue;if(place(c.x,c.z,c.kind,true,c.blueprint||selectedFacility)){const restored=cells.get(c.x+','+c.z);restored.level=Math.max(0,Math.min(3,Number(c.level)||0));refreshCell(restored);}}
+ for(const c of d.cells){if(!Number.isInteger(c.x)||!Number.isInteger(c.z)||!Object.hasOwn(costs,c.kind)||c.kind==='bulldoze')continue;if(place(c.x,c.z,c.kind,true,c.blueprint||selectedFacility)){const restored=cells.get(c.x+','+c.z);const native=catalog.game.lots?.find(l=>l.tgi===c.lot);if(native&&native.choices.some(b=>b.tgi===c.blueprint)){const q=(Number(c.rotation)||0)&3,[w,d]=q%2?[native.size[1],native.size[0]]:native.size;Object.assign(restored,{lot:native.tgi,blueprint:c.blueprint,rotation:q,width:w,depth:d,seed:Number(c.seed)>>>0,level:native.stage});for(let dz=0;dz<d;dz++)for(let dx=0;dx<w;dx++)cellFootprints.set((c.x+dx)+','+(c.z+dz),restored);}else restored.level=Math.max(0,Math.min(3,Number(c.level)||0));refreshCell(restored);}}
  for(const p of (d.pipes||[]).slice(0,65536)){const lim=(map.n-1)/2;if(Number.isInteger(p.x)&&Number.isInteger(p.z)&&p.x>=-lim&&p.z>=-lim&&p.x<lim&&p.z<lim)pipes.set(p.x+','+p.z,{id:p.x+','+p.z,x:p.x,z:p.z});}
  if(Array.isArray(d.taxRates)&&d.taxRates.length===12&&d.taxRates.every(n=>Number.isFinite(n)&&n>=0&&n<=25))taxRates=d.taxRates;if(Number.isFinite(d.taxMultiplier))taxMultiplier=d.taxMultiplier;syncTaxControls();
  month=Math.max(0,Number(d.month)||0);balance=Number.isFinite(d.balance)?d.balance:initialFunds;net=Number.isFinite(d.net)?d.net:0;if(Number.isFinite(d.initialFunds))initialFunds=d.initialFunds;updatePower();recount();stats();

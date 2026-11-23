@@ -67,3 +67,6 @@ Version 0.9.0 replaces the resident/job income shortcut with a budget ledger dri
 
 
 Version 0.10.0 prioritizes city maps/build tools/gameplay per user steering: original terrain textures and road art, continuous drag strokes, rectangular zoning/price/footprint previews, cancellation, occupied-tile protection and a terrain-triangle interpolation fix. See MAPS.md. Further region-selection work is not the immediate priority. Native lot composition, grading, stage/demand/traffic and original visual parity remain unfinished.
+
+
+Version 0.11.0 implements original growable lot composition for initial R/C/dirty-industrial stage-one growth. Proper footprints, textures, static props, source building families and road-facing orientation replace bare one-tile new buildings; recipe/orientation/footprint state persists in v6 saves. Selection/demand/density/stage progression and several object/effect types remain reconstructed or missing. See LOTS.md. Full game parity is not achieved.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0 — 2026-11-23
+
+- Develop residential, commercial and dirty-industrial zones into original stage-one lot recipes.
+- Assemble contiguous zoned tiles into real plot footprints and orient plots toward roads.
+- Render original lot paving, gardens, building positions, building-family variants and static props, including native window overlays.
+- Preserve lot recipes, orientations and footprints in version-6 saves; query and bulldoze through any occupied tile.
+- Keep legacy saves readable. Demand, higher-stage progression and density controls remain unfinished.
+
 ## 0.10.0 — 2026-11-23
 
 - Replace flat ground colours with original grass, beach, rock and seabed artwork.

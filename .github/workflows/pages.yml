@@ -26,10 +26,11 @@ jobs:
           node tools/test-saved-utilities.mjs
           node tools/test-finance.mjs
           node tools/test-map-tools.mjs
+          node tools/test-lot-development.mjs
       - name: Assemble browser files
         run: |
           mkdir -p _site
-          cp index.html style.css app.mjs dbpf.mjs data-source.mjs bundled-assets.mjs regions.mjs game-data.mjs power.mjs city-state.mjs water.mjs finance.mjs map-tools.mjs terrain-renderer.mjs _site/
+          cp index.html style.css app.mjs dbpf.mjs data-source.mjs bundled-assets.mjs regions.mjs game-data.mjs power.mjs city-state.mjs water.mjs finance.mjs map-tools.mjs terrain-renderer.mjs lot-development.mjs _site/
           cp -R vendor _site/
           cp -R assets _site/
           touch _site/.nojekyll
