@@ -1,11 +1,13 @@
-import {readIndex,decompress,exemplar,hex} from './dbpf.mjs';
-let local=false,archives=[],resources=new Map(),textureIds=new Map();
+import {readIndex,decompress,exemplar,hex,regionView} from './dbpf.mjs';
+import {openBundled,bundledResource,bundledTexture} from './bundled-assets.mjs';
+let local=false,bundled=false,archives=[],resources=new Map(),textureIds=new Map();
+export async function openBundledSource(){const next=await openBundled();local=false;bundled=true;return next;}
 export async function openLocal(){
-  if(!['127.0.0.1','localhost'].includes(location.hostname)||new URLSearchParams(location.search).has('import'))return null;
+  if(!['127.0.0.1','localhost'].includes(location.hostname)||['import','bundled'].some(key=>new URLSearchParams(location.search).has(key)))return null;
   const r=await fetch('./api/catalog');if(!r.ok)return null;local=true;return r.json();
 }
 export async function importFiles(files,onProgress=()=>{}){
-  local=false;archives=[];resources=new Map();textureIds=new Map();const counts={},names=new Map(),models=[],cities=[];
+  local=false;bundled=false;archives=[];resources=new Map();textureIds=new Map();const counts={},names=new Map(),models=[],cities=[];
   const selected=[...files].filter(f=>/\.(dat|sc4|sc4model|sc4desc|sc4lot)$/i.test(f.name));
   for(let k=0;k<selected.length;k++){
     const file=selected[k],head=new Uint8Array(await file.slice(0,96).arrayBuffer());if(String.fromCharCode(...head.slice(0,4))!=='DBPF')continue;
@@ -14,7 +16,7 @@ export async function importFiles(files,onProgress=()=>{}){
       const entries=readIndex(fake,Math.max(file.size,fake.length)).entries,id=archives.length,name=(file.webkitRelativePath||file.name).replace(/^[^/]+\//,'');
       archives.push({file,id,name,size:file.size,count:entries.length,entries});
       entries.forEach((e,i)=>{e.archive=id;e.index=i;resources.set(e.tgi,e);counts[hex(e.type)]=(counts[hex(e.type)]||0)+1;if(e.type===0x7ab50e44)textureIds.set(e.instance,e);});
-      if(/\.sc4$/i.test(name)){const e=entries.find(e=>e.type===0xa9dd6ff4&&e.instance===1);if(e)cities.push({name:name.replace(/^Regions\//,''),tgi:e.tgi,archive:id,index:e.index,subfiles:Object.fromEntries(entries.filter(e=>[0xa9bd882d,0xc9c05c6e,0xa9bc9ab6,0x49b9e602,0xc97f987c,0x2977aa47,0xa9c05c85].includes(e.type)).map(e=>[hex(e.type),e.index]))});}
+      if(/\.sc4$/i.test(name)){const e=entries.find(e=>e.type===0xa9dd6ff4&&e.instance===1);if(e){const meta=entries.find(e=>e.type===0xca027edb),preview=entries.find(e=>e.type===0x8a2482b9&&e.instance===0);cities.push({name:name.replace(/^Regions\//,''),tgi:e.tgi,archive:id,index:e.index,region:meta?regionView(await readEntry(meta)):null,previewIndex:preview?.index,subfiles:Object.fromEntries(entries.filter(e=>[0xa9bd882d,0xc9c05c6e,0xa9bc9ab6,0x49b9e602,0xc97f987c,0x2977aa47,0xa9c05c85].includes(e.type)).map(e=>[hex(e.type),e.index]))});}}
     }catch(e){onProgress(`Skipping ${file.name}: ${e.message}`);}
     if(k%8===0){onProgress(`Indexing your files: ${k+1}/${selected.length}`);await new Promise(r=>setTimeout(r,0));}
   }
@@ -29,10 +31,12 @@ export async function importFiles(files,onProgress=()=>{}){
 }
 async function readEntry(e){if(!e)throw Error('Resource unavailable');const a=archives[e.archive],b=await a.file.slice(e.offset,e.offset+e.size).arrayBuffer();return decompress(new Uint8Array(b));}
 export async function getResource(query){
+  if(bundled)return bundledResource(query);
   if(local){const r=await fetch('./api/resource?'+query);if(!r.ok)throw Error('Resource not found');return decompress(new Uint8Array(await r.arrayBuffer()));}
   const q=new URLSearchParams(query),e=q.has('archive')?archives[Number(q.get('archive'))]?.entries[Number(q.get('index'))]:resources.get(q.get('tgi'));return readEntry(e);
 }
 export async function getTexture(id,group){
+  if(bundled)return bundledTexture(id,group);
   if(local){const r=await fetch(`./api/texture?id=${id}&group=${group}`);if(!r.ok)return null;return decompress(new Uint8Array(await r.arrayBuffer()));}
   const e=resources.get([0x7ab50e44,group,id].map(hex).join('-'))||resources.get([0x7ab50e44,0x1abe787d,id].map(hex).join('-'))||textureIds.get(id);return e?readEntry(e):null;
 }

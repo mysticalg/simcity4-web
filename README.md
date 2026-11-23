@@ -1,15 +1,17 @@
 # SimCity 4 browser reconstruction
 
-Version **0.3.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.4.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
-**This does not yet run the full original game.** It currently provides original terrain and partial saved city rendering, an S3D/FSH asset explorer, and an experimental city sandbox. Simulation rules and sandbox buildings are new provisional implementations, not a verified translation of the original engine.
+**This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. Simulation rules and new construction buildings remain provisional implementations, not a verified translation of the original engine. The asset explorer has been removed.
 
 ## Run
 
 - Hosted build: https://mysticalg.github.io/simcity4-web/
-- Select your own installed/extracted game folder, including `Regions`. The browser reads selected files locally; game files are not uploaded.
-- GOG installer executables must be extracted or installed first.
-- Chrome or Edge desktop is recommended for the directory picker and WebGL.
+- Open the hosted build directly. Its current game assets are bundled; no folder selection or upload is required.
+- Choose a region, select a city tile and click Enter city.
+- Region selection downloads the compressed index (approximately 1.9 MB) and thumbnail images. Opening Fulham adds one 3.7 MB asset pack; other city content loads on demand.
+- The complete package is approximately 694 MB including region previews. Packs are integrity checked and fetched only when needed.
+- Optional local data import is available with `?import` in the URL. Files selected there are read locally.
 
 For local use, run `node server.mjs` with Node.js 22 or newer. It defaults to the extracted game data in this workspace. On another machine, set `SC4_DATA` to the installed game directory. Alternatively run `Launch.ps1 -GameData 'D:\path\to\SimCity 4 Deluxe'`.
 
@@ -19,11 +21,11 @@ All browser dependencies needed by the static page are vendored; no npm installa
 
 - DBPF 1.0 archive index and resource access, RefPack/QFS decompression.
 - Original `.sc4` terrain height fields at 64, 128 and 256 tile sizes.
-- Original saved buildings, cohort inheritance, network vertices/UVs and lot textures. Select a populated city such as London/Fulham, load its terrain, then click “Load original city geometry”.
-- Original static props and flora, with instanced models and merged ground geometry. Fulham opens by default when present. Animated scenery is incomplete.
+- Region selection using all six original regions, 417 city layouts, original thumbnails and saved population/jobs metadata.
+- Original saved buildings, cohort inheritance, network vertices/UVs and lot textures load when entering populated cities.
+- Original static props and flora, with instanced models and merged ground geometry. Animated scenery is incomplete.
 - S3D vertex/index/primitive/material/first-animation-frame parsing.
 - FSH DXT1/DXT3/DXT5 and several uncompressed texture formats.
-- Original resource search by model name or TGI; material texture resolution.
 - Native WebGL terrain and model rendering using Three.js.
 - Experimental road, residential, commercial, industrial, power, park and demolition tools.
 - Experimental growth, budget, pause, month step, browser sandbox saves and restore.
@@ -31,10 +33,10 @@ All browser dependencies needed by the static page are vendored; no npm installa
 
 ## Controls
 
-Left click/drag builds or inspects. Right drag orbits; middle drag pans; wheel zooms. Space pauses/resumes. F toggles fullscreen. “Build demo district” creates a generated sandbox district on a flat dry area of the original terrain.
+Start by choosing a region and city. Left click/drag builds or queries. Right drag orbits; middle drag pans; wheel zooms. Space pauses/resumes. F toggles fullscreen. Return to region selects another city. “Build starter district” under New construction creates a generated district on a flat dry area of the original terrain.
 
 ## Remaining work
 
-See [research/STATUS.md](research/STATUS.md). Animated scenery, exact flora states, lot overlays, complete networks, traffic, utilities, growth, desirability, pollution, finance, education, health, services, disasters, regions, advisors, missions, original interface and audio are incomplete or absent. The original city viewer renders geometry; it does not run that city's original simulation. Browser sandbox saves are a separate format.
+See [research/STATUS.md](research/STATUS.md). Animated scenery, exact flora states, lot overlays, complete networks, traffic, utilities, growth, desirability, pollution, finance, education, health, services, disasters, regional simulation, advisors, missions, original interface and audio are incomplete or absent. The current simulation handles new construction; original saved city behavior is not yet ported. Browser construction saves are a separate format.
 
-The repository contains code and format research only. It does not include the commercial game's executable, installer, data archives, textures, music or sounds. See [THIRD_PARTY.md](THIRD_PARTY.md).
+The repository now includes browser packs built from the supplied copy's supported resources and saved cities, at the user's request. It does not contain the executable or installer. Original game content is not covered by the code's MIT license; see [THIRD_PARTY.md](THIRD_PARTY.md).

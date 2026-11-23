@@ -1,31 +1,32 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs';
-import {openLocal,importFiles,getResource,getTexture} from './data-source.mjs';
+import {openLocal,openBundledSource,importFiles,getResource,getTexture} from './data-source.mjs';
+import {createRegionSelection} from './regions.mjs';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),controls=new OrbitControls(camera,canvas);scene.background=new THREE.Color(0x8daeb9);
 controls.mouseButtons={LEFT:null,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.ROTATE};controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.49;controls.minDistance=20;controls.maxDistance=12000;
 scene.add(new THREE.HemisphereLight(0xe5f5ff,0x647448,2.3));const sun=new THREE.DirectionalLight(0xfff2d4,2.4);sun.position.set(-700,1500,400);scene.add(sun);
-const cityScene=new THREE.Group(),assetScene=new THREE.Group(),lots=new THREE.Group(),savedCity=new THREE.Group();scene.add(cityScene,assetScene);cityScene.add(lots,savedCity);assetScene.visible=false;
+const cityScene=new THREE.Group(),lots=new THREE.Group(),savedCity=new THREE.Group();scene.add(cityScene);cityScene.add(lots,savedCity);
 let savedCount=0,savedMissing=0,savedRequest=0,savedNetworkCount=0,savedTextureCount=0,savedPropCount=0,savedFloraCount=0,savedSceneryMissing=0,savedView=false;
-let sceneryFailures={};
-function setSavedView(value){if(savedView&&!value)savedRequest++;savedView=value;savedCity.visible=value;lots.visible=!value;$('#back-sandbox').hidden=!value;for(const id of ['pause','step','save','restore','reset'])$('#'+id).disabled=value;stats();}
+let sceneryFailures={},regionSelection=null,originalPopulation=0,originalJobs=0;
+function setSavedView(value){if(savedView&&!value)savedRequest++;savedView=value;savedCity.visible=true;lots.visible=true;$('#back-sandbox').hidden=!value;stats();}
 function clearSavedCity(){for(const child of savedCity.children){if(child.userData.original){child.dispose?.();continue;}child.geometry?.dispose();child.material?.dispose();}savedCity.clear();}
 let catalog,ground,water,map,cityIndex=0,mode='city',tool='inspect',hover=null,month=0,balance=100000,population=0,jobs=0,net=0,paused=true,clock=0,loading=false,ready=false,modelRequest=0,activeModel=null,modelGroup=null;
 const cells=new Map(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),costs={road:10,residential:20,commercial:25,industrial:30,power:500,park:40,bulldoze:5};
 function notice(s){$('#notice').textContent=s;}
-function stats(){const stats=mode==='city'?(savedView?[['Original buildings',savedCount],['Original road tiles',savedNetworkCount],['Original props',savedPropCount],['Original trees',savedFloraCount],['Simulation','Viewer only']]:[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]]):[['Geometry','Original S3D'],['Textures','Original FSH'],['Renderer','WebGL']];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
+function stats(){const stats=[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.round(w*renderer.getPixelRatio())||canvas.height!==Math.round(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}}
-function render(){resize();controls.update();renderer.render(scene,camera);}
+function render(){if($('#city-screen').hidden)return;resize();controls.update();renderer.render(scene,camera);}
 function dispose(object){object.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){m.map?.dispose();m.dispose();}}});}
 const resource=getResource;
 function elevation(x,z){if(!map)return 0;const nx=Math.max(0,Math.min(map.n-1,x/16+(map.n-1)/2)),nz=Math.max(0,Math.min(map.n-1,z/16+(map.n-1)/2)),ix=Math.min(map.n-2,Math.floor(nx)),iz=Math.min(map.n-2,Math.floor(nz)),fx=nx-ix,fz=nz-iz,a=map.heights;return (a[iz*map.n+ix]*(1-fx)+a[iz*map.n+ix+1]*fx)*(1-fz)+(a[(iz+1)*map.n+ix]*(1-fx)+a[(iz+1)*map.n+ix+1]*fx)*fz-250;}
-function clearLots(){for(const c of cells.values()){lots.remove(c.object);dispose(c.object);}cells.clear();month=0;balance=100000;population=jobs=net=0;paused=true;$('#pause').textContent='Run';stats();}
+function clearLots(){for(const c of cells.values()){lots.remove(c.object);dispose(c.object);}cells.clear();month=0;balance=100000;population=originalPopulation;jobs=originalJobs;net=0;paused=true;$('#pause').textContent='Run';stats();}
 async function loadTerrain(index){
   if(loading)return;loading=true;try{
     const c=catalog.cities[index],next=terrain(await resource(`archive=${c.archive}&index=${c.index}`));
-    map=next;cityIndex=index;clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
+    map=next;cityIndex=index;originalPopulation=c.region?.residents||0;originalJobs=(c.region?.commercialJobs||0)+(c.region?.industrialJobs||0);clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
     const n=map.n,size=(n-1)*16,g=new THREE.PlaneGeometry(size,size,n-1,n-1);g.rotateX(-Math.PI/2);
     const pos=g.attributes.position,colors=[];
     for(let i=0;i<pos.count;i++){
@@ -69,7 +70,7 @@ function place(x,z,kind=tool,free=false){
   if(!free)balance-=price;stats();return true;
 }
 function simulate(){
-  month++;let upkeep=0;population=jobs=0;
+  month++;let upkeep=0;population=originalPopulation;jobs=originalJobs;
   for(const c of cells.values()){
     upkeep+=c.kind==='power'?45:c.kind==='road'?.2:c.kind==='park'?1:.1;
     if(['residential','commercial','industrial'].includes(c.kind)){
@@ -146,20 +147,10 @@ async function loadSavedBuildings(){
     notice(`${savedCount} buildings · ${savedNetworkCount} roads · ${savedPropCount} props · ${savedFloraCount} trees · ${savedSceneryMissing} unresolved. Partial viewer; original simulation is not running.`);stats();render();
   }catch(e){notice('Saved city load failed: '+e.message);}
 }
-async function showModel(){const tgi=$('#models').value,entry=catalog.models.find(m=>m.tgi===tgi);if(!entry)return;const ticket=++modelRequest;notice('Decoding original geometry and textures…');try{
-  const result=await originalModel(entry);if(ticket!==modelRequest){return;}
-  if(modelGroup){assetScene.remove(modelGroup);modelGroup.traverse(x=>x.geometry?.dispose());}modelGroup=result.object;assetScene.add(modelGroup);activeModel=entry;
-  const box=new THREE.Box3().setFromObject(modelGroup),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),scale=Math.max(size.x,size.y,size.z,8);
-  camera.position.copy(center).add(new THREE.Vector3(scale*1.4,scale*.9,scale*1.4));controls.target.copy(center);controls.update();
-  $('#scene-label').textContent=entry.name;$('#model-info').textContent=`${entry.tgi}\n${result.triangles} triangles · ${result.object.children.length} meshes\nBounds: ${size.toArray().map(x=>x.toFixed(1)).join(' × ')}\nMissing textures: ${result.missing}`;
-  notice(result.missing?`Model decoded; ${result.missing} material(s) have no resolved texture.`:'Original model and textures decoded successfully.');stats();render();
-}catch(e){notice('Model load failed: '+e.message);}}
-function switchMode(next){mode=next;cityScene.visible=next==='city';assetScene.visible=next==='asset';$('#city-panel').hidden=next!=='city';$('#asset-panel').hidden=next!=='asset';$('#city-tab').classList.toggle('active',next==='city');$('#asset-tab').classList.toggle('active',next==='asset');if(next==='asset')showModel();else if(map){const size=(map.n-1)*16;camera.position.set(size*.65,size*.6,size*.65);controls.target.set(0,Math.max(0,elevation(0,0)),0);$('#scene-label').textContent=catalog.cities[cityIndex].name.replace('.sc4','')+' · original terrain';notice('Select a tool to build.');}stats();}
-function filterModels(){const q=$('#search').value.toLowerCase(),ms=catalog.models.filter(m=>(m.name+' '+m.tgi).toLowerCase().includes(q)).slice(0,600);$('#models').replaceChildren(...ms.map(m=>new Option(m.name,m.tgi)));$('#models').selectedIndex=ms.length?0:-1;}
 function pick(event){if(mode!=='city'||!ground)return null;const r=canvas.getBoundingClientRect();pointer.set((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObject(ground)[0];if(!hit)return null;return {x:Math.floor(hit.point.x/16),z:Math.floor(hit.point.z/16)};}
 let drawing=false,lastPaint='';canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drawing=true;canvas.setPointerCapture(e.pointerId);const p=pick(e);if(p){place(p.x,p.z);lastPaint=p.x+','+p.z;}});canvas.addEventListener('pointermove',e=>{hover=pick(e);if(drawing&&hover){const key=hover.x+','+hover.z;if(key!==lastPaint){place(hover.x,hover.z);lastPaint=key;}}});canvas.addEventListener('pointerup',()=>drawing=false);canvas.addEventListener('pointercancel',()=>drawing=false);canvas.addEventListener('contextmenu',e=>e.preventDefault());
-$('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setSavedView(false);tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));notice(`Sandbox selected: ${tool}. Click or drag on terrain.`);});
-$('#city-tab').onclick=()=>switchMode('city');$('#asset-tab').onclick=()=>switchMode('asset');$('#load-terrain').onclick=()=>loadTerrain(Number($('#terrain-select').value));$('#load-model').onclick=showModel;$('#models').ondblclick=showModel;$('#search').oninput=filterModels;
+$('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setSavedView(false);tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));notice(`Selected ${tool}. Click or drag on terrain.`);});
+$('#load-terrain').onclick=()=>loadTerrain(Number($('#terrain-select').value));
 $('#pause').onclick=()=>{paused=!paused;$('#pause').textContent=paused?'Run':'Pause';};$('#step').onclick=simulate;$('#reset').onclick=()=>{clearLots();notice('Sandbox cleared.');};
 $('#saved-buildings').onclick=loadSavedBuildings;
 $('#back-sandbox').onclick=()=>{setSavedView(false);notice('Returned to the experimental sandbox.');};
@@ -173,20 +164,25 @@ $('#demo').onclick=()=>{
 };
 $('#save').onclick=()=>{localStorage.setItem('sc4-web-sandbox-v1',JSON.stringify({version:1,city:catalog.cities[cityIndex].name,month,balance,cells:[...cells.values()].map(({object,...c})=>c)}));notice('Sandbox saved in this browser.');};
 $('#restore').onclick=async()=>{try{const d=JSON.parse(localStorage.getItem('sc4-web-sandbox-v1'));if(!d||d.version!==1||!Array.isArray(d.cells)||d.cells.length>100000)throw Error('No valid saved sandbox');const i=catalog.cities.findIndex(c=>c.name===d.city);if(i<0)throw Error('Saved terrain unavailable');await loadTerrain(i);$('#terrain-select').value=i;for(const c of d.cells){if(!Number.isInteger(c.x)||!Number.isInteger(c.z)||!Object.hasOwn(costs,c.kind)||c.kind==='bulldoze')continue;if(place(c.x,c.z,c.kind,true)){const restored=cells.get(c.x+','+c.z);restored.level=Math.max(0,Math.min(3,Number(c.level)||0));refreshCell(restored);}}month=Math.max(0,Number(d.month)||0);balance=Number.isFinite(d.balance)?d.balance:100000;recount();stats();notice('Sandbox restored.');}catch(e){notice(e.message);}};
-function recount(){population=jobs=0;for(const c of cells.values()){if(c.kind==='residential')population+=c.level*8;else if(c.kind==='industrial'||c.kind==='commercial')jobs+=c.level*(c.kind==='industrial'?12:8);}}
+function recount(){population=originalPopulation;jobs=originalJobs;for(const c of cells.values()){if(c.kind==='residential')population+=c.level*8;else if(c.kind==='industrial'||c.kind==='commercial')jobs+=c.level*(c.kind==='industrial'?12:8);}}
 document.addEventListener('keydown',e=>{if(!ready||['INPUT','SELECT'].includes(e.target.tagName))return;if(e.key===' '){e.preventDefault();$('#pause').click();}if(e.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else $('#viewport').requestFullscreen();}});
-window.advanceTime=ms=>{if(!paused&&mode==='city'&&!savedView){clock+=ms;while(clock>=2500){simulate();clock-=2500;}}render();};
-window.render_game_to_text=()=>JSON.stringify({mode,renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),savedView,savedBuildings:savedCount,unresolvedBuildings:savedMissing,savedNetworkTiles:savedNetworkCount,savedLotTiles:savedTextureCount,savedProps:savedPropCount,savedFlora:savedFloraCount,unresolvedScenery:savedSceneryMissing,drawCalls:renderer.info.render.calls,activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading:loading||!ready});
+window.advanceTime=ms=>{if(!paused&&mode==='city'&&!savedView&&!$('#city-screen').hidden){clock+=ms;while(clock>=2500){simulate();clock-=2500;}}render();};
+window.render_game_to_text=()=>JSON.stringify({mode:regionSelection?.getState().screen||'loading',region:regionSelection?.getState(),renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),savedView,savedBuildings:savedCount,unresolvedBuildings:savedMissing,savedNetworkTiles:savedNetworkCount,savedLotTiles:savedTextureCount,savedProps:savedPropCount,savedFlora:savedFloraCount,unresolvedScenery:savedSceneryMissing,drawCalls:renderer.info.render.calls,activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading:loading||!ready});
 // Deterministic hooks for verifying placement and growth on real terrain.
-window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),switchMode,showModel,loadSavedBuildings,sceneryFailures:()=>sceneryFailures};
+window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),loadSavedBuildings,sceneryFailures:()=>sceneryFailures};
 let last=performance.now();function loop(now){const dt=Math.min(100,now-last);last=now;window.advanceTime(dt);requestAnimationFrame(loop);}requestAnimationFrame(loop);
 async function initialize(next){
   document.body.classList.add('loading');
   catalog=next;if(!catalog.cities.length)throw Error('No .sc4 terrain files found. Include the Regions folder.');
   $('#import-screen').hidden=true;
-  $('#engine').textContent=`${catalog.archives.length} archives · ${catalog.models.length.toLocaleString()} models · WebGL`;
+  $('#engine').textContent=`${new Set(catalog.cities.map(c=>c.name.split('/')[0])).size} regions · ${catalog.cities.length} cities · Assets included`;
   const populated=document.createElement('optgroup'),empty=document.createElement('optgroup');populated.label='Populated cities · original geometry available';empty.label='Other original terrain';catalog.cities.forEach((c,i)=>(c.subfiles?.a9bd882d?populated:empty).append(new Option(c.name.replace('City - ',''),i)));$('#terrain-select').replaceChildren(populated,empty);
-  filterModels();let initial=catalog.cities.findIndex(c=>c.name==='London/City - Fulham.sc4');if(initial<0)initial=catalog.cities.findIndex(c=>c.subfiles?.a9bd882d);if(initial<0)initial=0;$('#terrain-select').value=initial;await loadTerrain(initial);if(catalog.cities[initial].subfiles?.a9bd882d)await loadSavedBuildings();ready=true;document.body.classList.remove('loading');
+  regionSelection=createRegionSelection({catalog,getResource:resource,onEnter:async index=>{
+    document.body.classList.add('loading');ready=false;
+    try{await loadTerrain(index);if(catalog.cities[index].subfiles?.a9bd882d)await loadSavedBuildings();setSavedView(false);$('#city-title').textContent=catalog.cities[index].name.split('/').at(-1).replace('City - ','').replace('.sc4','');$('#terrain-select').value=index;notice('Select a tool to build. Existing city simulation is being reconstructed.');}
+    finally{ready=true;document.body.classList.remove('loading');}
+  }});ready=true;document.body.classList.remove('loading');
+  $('#return-regions').onclick=()=>{paused=true;$('#pause').textContent='Run';regionSelection.show();};
 }
 $('#game-files').onchange=async e=>{try{const next=await importFiles(e.target.files,s=>{$('#import-status').textContent=s;});await initialize(next);}catch(e){$('#import-status').textContent=e.message;}};
-try{const local=await openLocal();if(local)await initialize(local);else{$('#import-screen').hidden=false;$('#engine').textContent='v0.3.0 · Select your game folder';notice('Select your installed game folder to begin.');}}catch(e){$('#import-screen').hidden=false;$('#import-status').textContent=e.message;}
+try{if(new URLSearchParams(location.search).has('import')){$('#import-screen').hidden=false;$('#engine').textContent='Optional local game folder';}else{notice('Loading bundled game assets…');const local=await openLocal();await initialize(local||await openBundledSource());}}catch(e){$('#engine').textContent='Asset download failed';notice(e.message+' — reload to retry.');document.body.classList.remove('loading');}

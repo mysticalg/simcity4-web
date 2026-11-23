@@ -55,6 +55,11 @@ export function terrain(a){
   for(let i=0;i<n*n;i++){const h=v.getFloat32(2+4*i,true);if(!Number.isFinite(h)||Math.abs(h)>100000)throw Error('Invalid height');heights[i]=h;}
   return {n,heights};
 }
+export function regionView(a){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength);if(a.length<32||v.getUint16(0,true)!==1)throw Error('Unsupported region metadata');
+  const [x,z,width,depth,residents,commercialJobs,industrialJobs]=[4,8,12,16,20,24,28].map(p=>v.getUint32(p,true));
+  if(!width||!depth||width>16||depth>16||x>256||z>256)throw Error('Invalid region city bounds');return {x,z,width,depth,residents,commercialJobs,industrialJobs};
+}
 export function savedBuildings(a){
   const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
   while(start<a.length){

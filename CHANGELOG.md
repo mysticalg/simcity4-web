@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 — 2026-11-23
+
+- Start with region selection: six original regions, 417 city layouts, thumbnails, population/job totals, selection and entering/returning from cities.
+- Remove the asset explorer interface. Keep original city geometry visible while building new construction.
+- Bundle supported game resources and saved cities so the hosted reconstruction opens without any upload or folder selection.
+- Add compressed, content-hashed asset packs, SHA-256 validation, retries and a bounded in-memory pack cache.
+- Put the default city assets into one 3.7 MB pack; the compressed index is 1.9 MB. Other resources load on demand.
+- The current package contains 141,907 indexed resources, approximately 674 MB in total. Executable and installer are excluded.
+- Preserve optional local import through `?import`.
+
 ## 0.3.0 — 2026-11-23
 
 - Read original saved props and flora, state model keys and flora model keys.

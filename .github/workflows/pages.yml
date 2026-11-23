@@ -21,8 +21,9 @@ jobs:
       - name: Assemble browser files
         run: |
           mkdir -p _site
-          cp index.html style.css app.mjs dbpf.mjs data-source.mjs _site/
+          cp index.html style.css app.mjs dbpf.mjs data-source.mjs bundled-assets.mjs regions.mjs _site/
           cp -R vendor _site/
+          cp -R assets _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
