@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures} from './dbpf.mjs';
+import {decompress,terrain,s3d,fsh,hex,exemplar,savedBuildings,savedNetworks,savedLotTextures,savedScenery} from './dbpf.mjs';
 import {openLocal,importFiles,getResource,getTexture} from './data-source.mjs';
 const $=s=>document.querySelector(s),canvas=$('#game');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0x8daeb9);renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -8,13 +8,14 @@ const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,1,30000),c
 controls.mouseButtons={LEFT:null,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.ROTATE};controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.49;controls.minDistance=20;controls.maxDistance=12000;
 scene.add(new THREE.HemisphereLight(0xe5f5ff,0x647448,2.3));const sun=new THREE.DirectionalLight(0xfff2d4,2.4);sun.position.set(-700,1500,400);scene.add(sun);
 const cityScene=new THREE.Group(),assetScene=new THREE.Group(),lots=new THREE.Group(),savedCity=new THREE.Group();scene.add(cityScene,assetScene);cityScene.add(lots,savedCity);assetScene.visible=false;
-let savedCount=0,savedMissing=0,savedRequest=0,savedNetworkCount=0,savedTextureCount=0,savedView=false;
-function setSavedView(value){savedView=value;savedCity.visible=value;lots.visible=!value;$('#back-sandbox').hidden=!value;for(const id of ['pause','step','save','restore','reset'])$('#'+id).disabled=value;stats();}
-function clearSavedCity(){for(const child of savedCity.children){if(child.userData.original)continue;child.geometry?.dispose();child.material?.dispose();}savedCity.clear();}
+let savedCount=0,savedMissing=0,savedRequest=0,savedNetworkCount=0,savedTextureCount=0,savedPropCount=0,savedFloraCount=0,savedSceneryMissing=0,savedView=false;
+let sceneryFailures={};
+function setSavedView(value){if(savedView&&!value)savedRequest++;savedView=value;savedCity.visible=value;lots.visible=!value;$('#back-sandbox').hidden=!value;for(const id of ['pause','step','save','restore','reset'])$('#'+id).disabled=value;stats();}
+function clearSavedCity(){for(const child of savedCity.children){if(child.userData.original){child.dispose?.();continue;}child.geometry?.dispose();child.material?.dispose();}savedCity.clear();}
 let catalog,ground,water,map,cityIndex=0,mode='city',tool='inspect',hover=null,month=0,balance=100000,population=0,jobs=0,net=0,paused=true,clock=0,loading=false,ready=false,modelRequest=0,activeModel=null,modelGroup=null;
 const cells=new Map(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),costs={road:10,residential:20,commercial:25,industrial:30,power:500,park:40,bulldoze:5};
 function notice(s){$('#notice').textContent=s;}
-function stats(){const stats=mode==='city'?(savedView?[['Original buildings',savedCount],['Original road tiles',savedNetworkCount],['Original lot tiles',savedTextureCount],['Simulation','Viewer only']]:[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]]):[['Geometry','Original S3D'],['Textures','Original FSH'],['Renderer','WebGL']];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
+function stats(){const stats=mode==='city'?(savedView?[['Original buildings',savedCount],['Original road tiles',savedNetworkCount],['Original props',savedPropCount],['Original trees',savedFloraCount],['Simulation','Viewer only']]:[['Treasury','§ '+Math.round(balance).toLocaleString()],['Residents',population.toLocaleString()],['Jobs',jobs.toLocaleString()],['Month',month],['Balance',`${net>=0?'+':''}${Math.round(net)}`]]):[['Geometry','Original S3D'],['Textures','Original FSH'],['Renderer','WebGL']];$('#stats').replaceChildren(...stats.map(([k,v])=>{const e=document.createElement('div');e.className='stat';e.innerHTML=`${k}<b></b>`;e.lastElementChild.textContent=v;return e;}));}
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.round(w*renderer.getPixelRatio())||canvas.height!==Math.round(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}}
 function render(){resize();controls.update();renderer.render(scene,camera);}
 function dispose(object){object.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){m.map?.dispose();m.dispose();}}});}
@@ -24,7 +25,7 @@ function clearLots(){for(const c of cells.values()){lots.remove(c.object);dispos
 async function loadTerrain(index){
   if(loading)return;loading=true;try{
     const c=catalog.cities[index],next=terrain(await resource(`archive=${c.archive}&index=${c.index}`));
-    map=next;cityIndex=index;clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
+    map=next;cityIndex=index;clearLots();savedRequest++;savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;clearSavedCity();setSavedView(false);$('#saved-buildings').disabled=!c.subfiles?.a9bd882d;if(ground){cityScene.remove(ground,water);dispose(ground);dispose(water);}
     const n=map.n,size=(n-1)*16,g=new THREE.PlaneGeometry(size,size,n-1,n-1);g.rotateX(-Math.PI/2);
     const pos=g.attributes.position,colors=[];
     for(let i=0;i<pos.count;i++){
@@ -102,19 +103,19 @@ async function inheritedExemplar(tgi,depth=0){
 }
 async function loadSavedBuildings(){
   const city=catalog.cities[cityIndex],index=city.subfiles?.a9bd882d;if(index===undefined){notice('This city has no saved building records.');return;}
-  const ticket=++savedRequest;clearSavedCity();savedCount=savedMissing=savedNetworkCount=savedTextureCount=0;setSavedView(true);paused=true;$('#pause').textContent='Run';notice('Reading original saved buildings…');
+  const ticket=++savedRequest;clearSavedCity();savedCount=savedMissing=savedNetworkCount=savedTextureCount=savedPropCount=savedFloraCount=savedSceneryMissing=0;setSavedView(true);paused=true;$('#pause').textContent='Run';notice('Reading original saved buildings…');
   try{
-    const records=savedBuildings(await resource(`archive=${city.archive}&index=${index}`)),modelsById=new Map(catalog.models.map(m=>[m.tgi,m])),size=(map.n-1)*16;
+    const records=savedBuildings(await resource(`archive=${city.archive}&index=${index}`)),modelsById=new Map(catalog.models.map(m=>[m.tgi,m])),size=(map.n-1)*16,batches=new Map(),groundBatches=new Map(),buildingBounds=new THREE.Box3();
+    function queueOriginal(obj){obj.updateMatrixWorld(true);obj.traverse(mesh=>{if(!mesh.isMesh)return;const key=mesh.geometry.uuid+':'+mesh.material.uuid;if(!batches.has(key))batches.set(key,{geometry:mesh.geometry,material:mesh.material,matrices:[]});batches.get(key).matrices.push(mesh.matrixWorld.clone());});}
+    function queueGround(pos,uv,material){const key=material.uuid;if(!groundBatches.has(key))groundBatches.set(key,{pos:[],uv:[],indices:[],material});const b=groundBatches.get(key),base=b.pos.length/3;b.pos.push(...pos);b.uv.push(...uv);b.indices.push(base,base+1,base+2,base,base+2,base+3);}
+    function resolveModelKey(props,state=0){const key=props['27812821']||props['27812820']||props['27812825'];if(Array.isArray(key))return key;const states=props['27812824'];if(Array.isArray(states)){const options=[];for(let i=0;i+7<states.length;i+=8)if(states[i+7])options.push({state:states[i],key:states.slice(i+5,i+8)});return (options.find(x=>x.state===state)||options[0])?.key;}return null;}
+    async function recordObject(b,props){const key=resolveModelKey(props,b.state);if(!key||key.length<3)throw Error('No resolved model key');const base=key[2]>>>0,variant=(base+0x400+(b.orientation%4)*0x10)>>>0,tgi=[key[0],key[1],variant].map(hex).join('-'),entry=modelsById.get(tgi)||modelsById.get(key.slice(0,3).map(hex).join('-'));if(!entry)throw Error('Model variant unavailable');if(!buildingModelCache.has(entry.tgi))buildingModelCache.set(entry.tgi,originalModel(entry));const model=await buildingModelCache.get(entry.tgi),obj=model.object.clone(true);obj.rotation.y=-(b.orientation%4)*Math.PI/2;const bb=new THREE.Box3().setFromObject(obj),center=bb.getCenter(new THREE.Vector3());obj.position.set((b.min[0]+b.max[0])/2-size/2-center.x,b.min[1]-250-bb.min.y,(b.min[2]+b.max[2])/2-size/2-center.z);return obj;}
     for(let i=0;i<records.length;i++){
       if(ticket!==savedRequest)return;const b=records[i];if(!b.visible)continue;
       try{
-        const props=await inheritedExemplar(b.tgi),key=props['27812821']||props['27812820'];if(!Array.isArray(key)||key.length<3)throw Error('No resolved model key');
-        const base=key[2]>>>0,variant=(base+0x400+(b.orientation%4)*0x10)>>>0,tgi=[key[0],key[1],variant].map(hex).join('-'),entry=modelsById.get(tgi)||modelsById.get(key.slice(0,3).map(hex).join('-'));if(!entry)throw Error('Model variant unavailable');
-        if(!buildingModelCache.has(entry.tgi))buildingModelCache.set(entry.tgi,originalModel(entry));const model=await buildingModelCache.get(entry.tgi);
+        const props=await inheritedExemplar(b.tgi),obj=await recordObject(b,props);
         if(ticket!==savedRequest)return;
-        const obj=model.object.clone(true);obj.rotation.y=-(b.orientation%4)*Math.PI/2;
-        const bb=new THREE.Box3().setFromObject(obj),center=bb.getCenter(new THREE.Vector3());obj.position.set((b.min[0]+b.max[0])/2-size/2-center.x,b.min[1]-250-bb.min.y,(b.min[2]+b.max[2])/2-size/2-center.z);
-        obj.userData={original:true,tgi:b.tgi,name:props['00000020'],record:b};savedCity.add(obj);savedCount++;
+        buildingBounds.union(new THREE.Box3().setFromObject(obj));queueOriginal(obj);savedCount++;
       }catch{savedMissing++;}
       if(i%20===0){notice(`Original buildings: ${savedCount} rendered / ${records.length} records…`);render();await new Promise(r=>setTimeout(r,0));}
     }
@@ -125,21 +126,24 @@ async function loadSavedBuildings(){
       const networks=savedNetworks(await resource(`archive=${city.archive}&index=${ni}`));
       for(let i=0;i<networks.length;i++){if(ticket!==savedRequest)return;const n=networks[i],mat=await groundMaterial(n.texture+4)||await groundMaterial(n.texture);if(!mat)continue;const pos=[],uv=[];
         for(const v of n.vertices){pos.push(v.position[0]-size/2,v.position[1]-250+.1,v.position[2]-size/2);uv.push(...v.uv);}
-        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex([0,1,2,0,2,3]);savedCity.add(new THREE.Mesh(g,mat));savedNetworkCount++;if(i%100===0){notice(`Original roads: ${savedNetworkCount}/${networks.length}…`);await new Promise(r=>setTimeout(r,0));}
+        queueGround(pos,uv,mat);savedNetworkCount++;if(i%100===0){notice(`Original roads: ${savedNetworkCount}/${networks.length}…`);await new Promise(r=>setTimeout(r,0));}
       }
     }
     const ti=city.subfiles?.c97f987c;
     if(ti!==undefined){
       const tiles=savedLotTextures(await resource(`archive=${city.archive}&index=${ti}`));
       for(let i=0;i<tiles.length;i++){if(ticket!==savedRequest)return;const t=tiles[i],mat=await groundMaterial(t.texture,0x0986135e);if(!mat)continue;
-        const x=t.x*16-size/2,z=t.z*16-size/2,g=new THREE.BufferGeometry(),pos=[],uv=[];
+        const x=t.x*16-size/2,z=t.z*16-size/2,pos=[],uv=[];
         const corners=[[0,0],[0,16],[16,16],[16,0]],baseUV=[[0,0],[0,1],[1,1],[1,0]];
         for(let k=0;k<4;k++){const [dx,dz]=corners[k];pos.push(x+dx,elevation(x+dx,z+dz)+.3+t.priority*.0001,z+dz);const u=baseUV[(k+(t.orientation&3))%4];uv.push(t.orientation&4?1-u[0]:u[0],u[1]);}
-        g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex([0,1,2,0,2,3]);savedCity.add(new THREE.Mesh(g,mat));savedTextureCount++;if(i%200===0){notice(`Original lot tiles: ${savedTextureCount}/${tiles.length}…`);await new Promise(r=>setTimeout(r,0));}
+        queueGround(pos,uv,mat);savedTextureCount++;if(i%200===0){notice(`Original lot tiles: ${savedTextureCount}/${tiles.length}…`);await new Promise(r=>setTimeout(r,0));}
       }
     }
-    if(savedCount){const bb=new THREE.Box3().setFromObject(savedCity),center=bb.getCenter(new THREE.Vector3()),extent=bb.getSize(new THREE.Vector3()),radius=Math.max(extent.x,extent.z,500);controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(radius*.8,radius*.7,radius*.8));controls.update();}
-    notice(`${savedCount} original buildings · ${savedNetworkCount} road tiles · ${savedTextureCount} lot tiles. City rendering is partial; original simulation is not running.`);stats();render();
+    sceneryFailures={};for(const [type,flora]of [['2977aa47',false],['a9c05c85',true]]){const si=city.subfiles?.[type];if(si===undefined)continue;const scenery=savedScenery(await resource(`archive=${city.archive}&index=${si}`),flora);for(let i=0;i<scenery.length;i++){if(ticket!==savedRequest)return;const b=scenery[i];if(!b.visible)continue;try{const props=await inheritedExemplar(b.tgi),obj=await recordObject(b,props);queueOriginal(obj);if(flora)savedFloraCount++;else savedPropCount++;}catch(e){savedSceneryMissing++;const key=b.tgi+' '+e.message;sceneryFailures[key]=(sceneryFailures[key]||0)+1;}if(i%100===0){notice(`Original scenery: ${savedPropCount} props · ${savedFloraCount} trees…`);await new Promise(r=>setTimeout(r,0));}}}
+    for(const b of batches.values()){const mesh=new THREE.InstancedMesh(b.geometry,b.material,b.matrices.length);b.matrices.forEach((m,i)=>mesh.setMatrixAt(i,m));mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();mesh.userData.original=true;savedCity.add(mesh);}
+    for(const b of groundBatches.values()){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(b.pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(b.uv,2));g.setIndex(b.indices);savedCity.add(new THREE.Mesh(g,b.material));}
+    if(savedCount){const center=buildingBounds.getCenter(new THREE.Vector3()),extent=buildingBounds.getSize(new THREE.Vector3()),radius=Math.max(extent.x,extent.z,500);controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(radius*.8,radius*.7,radius*.8));controls.update();}
+    notice(`${savedCount} buildings · ${savedNetworkCount} roads · ${savedPropCount} props · ${savedFloraCount} trees · ${savedSceneryMissing} unresolved. Partial viewer; original simulation is not running.`);stats();render();
   }catch(e){notice('Saved city load failed: '+e.message);}
 }
 async function showModel(){const tgi=$('#models').value,entry=catalog.models.find(m=>m.tgi===tgi);if(!entry)return;const ticket=++modelRequest;notice('Decoding original geometry and textures…');try{
@@ -170,18 +174,19 @@ $('#demo').onclick=()=>{
 $('#save').onclick=()=>{localStorage.setItem('sc4-web-sandbox-v1',JSON.stringify({version:1,city:catalog.cities[cityIndex].name,month,balance,cells:[...cells.values()].map(({object,...c})=>c)}));notice('Sandbox saved in this browser.');};
 $('#restore').onclick=async()=>{try{const d=JSON.parse(localStorage.getItem('sc4-web-sandbox-v1'));if(!d||d.version!==1||!Array.isArray(d.cells)||d.cells.length>100000)throw Error('No valid saved sandbox');const i=catalog.cities.findIndex(c=>c.name===d.city);if(i<0)throw Error('Saved terrain unavailable');await loadTerrain(i);$('#terrain-select').value=i;for(const c of d.cells){if(!Number.isInteger(c.x)||!Number.isInteger(c.z)||!Object.hasOwn(costs,c.kind)||c.kind==='bulldoze')continue;if(place(c.x,c.z,c.kind,true)){const restored=cells.get(c.x+','+c.z);restored.level=Math.max(0,Math.min(3,Number(c.level)||0));refreshCell(restored);}}month=Math.max(0,Number(d.month)||0);balance=Number.isFinite(d.balance)?d.balance:100000;recount();stats();notice('Sandbox restored.');}catch(e){notice(e.message);}};
 function recount(){population=jobs=0;for(const c of cells.values()){if(c.kind==='residential')population+=c.level*8;else if(c.kind==='industrial'||c.kind==='commercial')jobs+=c.level*(c.kind==='industrial'?12:8);}}
-document.addEventListener('keydown',e=>{if(['INPUT','SELECT'].includes(e.target.tagName))return;if(e.key===' '){e.preventDefault();$('#pause').click();}if(e.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else $('#viewport').requestFullscreen();}});
+document.addEventListener('keydown',e=>{if(!ready||['INPUT','SELECT'].includes(e.target.tagName))return;if(e.key===' '){e.preventDefault();$('#pause').click();}if(e.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else $('#viewport').requestFullscreen();}});
 window.advanceTime=ms=>{if(!paused&&mode==='city'&&!savedView){clock+=ms;while(clock>=2500){simulate();clock-=2500;}}render();};
-window.render_game_to_text=()=>JSON.stringify({mode,renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),savedView,savedBuildings:savedCount,unresolvedBuildings:savedMissing,savedNetworkTiles:savedNetworkCount,savedLotTiles:savedTextureCount,activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading:loading||!ready});
+window.render_game_to_text=()=>JSON.stringify({mode,renderer:'WebGL',originalTerrain:catalog?.cities[cityIndex]?.name,tiles:map?map.n-1:0,tool,paused,month,balance,population,jobs,net,cells:[...cells.values()].map(({object,...c})=>c),savedView,savedBuildings:savedCount,unresolvedBuildings:savedMissing,savedNetworkTiles:savedNetworkCount,savedLotTiles:savedTextureCount,savedProps:savedPropCount,savedFlora:savedFloraCount,unresolvedScenery:savedSceneryMissing,drawCalls:renderer.info.render.calls,activeModel:activeModel?.tgi,coordinateSystem:'Terrain x east, z south; 16 metres/tile; sea level 250m',hover,loading:loading||!ready});
 // Deterministic hooks for verifying placement and growth on real terrain.
-window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),switchMode,showModel,loadSavedBuildings};
+window.sc4={place,simulate,elevation,getState:()=>JSON.parse(window.render_game_to_text()),switchMode,showModel,loadSavedBuildings,sceneryFailures:()=>sceneryFailures};
 let last=performance.now();function loop(now){const dt=Math.min(100,now-last);last=now;window.advanceTime(dt);requestAnimationFrame(loop);}requestAnimationFrame(loop);
 async function initialize(next){
+  document.body.classList.add('loading');
   catalog=next;if(!catalog.cities.length)throw Error('No .sc4 terrain files found. Include the Regions folder.');
   $('#import-screen').hidden=true;
   $('#engine').textContent=`${catalog.archives.length} archives · ${catalog.models.length.toLocaleString()} models · WebGL`;
   const populated=document.createElement('optgroup'),empty=document.createElement('optgroup');populated.label='Populated cities · original geometry available';empty.label='Other original terrain';catalog.cities.forEach((c,i)=>(c.subfiles?.a9bd882d?populated:empty).append(new Option(c.name.replace('City - ',''),i)));$('#terrain-select').replaceChildren(populated,empty);
-  filterModels();let initial=catalog.cities.findIndex(c=>c.name==='London/City - Fulham.sc4');if(initial<0)initial=catalog.cities.findIndex(c=>c.subfiles?.a9bd882d);if(initial<0)initial=0;$('#terrain-select').value=initial;await loadTerrain(initial);if(catalog.cities[initial].subfiles?.a9bd882d)await loadSavedBuildings();ready=true;
+  filterModels();let initial=catalog.cities.findIndex(c=>c.name==='London/City - Fulham.sc4');if(initial<0)initial=catalog.cities.findIndex(c=>c.subfiles?.a9bd882d);if(initial<0)initial=0;$('#terrain-select').value=initial;await loadTerrain(initial);if(catalog.cities[initial].subfiles?.a9bd882d)await loadSavedBuildings();ready=true;document.body.classList.remove('loading');
 }
 $('#game-files').onchange=async e=>{try{const next=await importFiles(e.target.files,s=>{$('#import-status').textContent=s;});await initialize(next);}catch(e){$('#import-status').textContent=e.message;}};
-try{const local=await openLocal();if(local)await initialize(local);else{$('#import-screen').hidden=false;$('#engine').textContent='v0.2.0 · Select your game folder';notice('Select your installed game folder to begin.');}}catch(e){$('#import-screen').hidden=false;$('#import-status').textContent=e.message;}
+try{const local=await openLocal();if(local)await initialize(local);else{$('#import-screen').hidden=false;$('#engine').textContent='v0.3.0 · Select your game folder';notice('Select your installed game folder to begin.');}}catch(e){$('#import-screen').hidden=false;$('#import-status').textContent=e.message;}

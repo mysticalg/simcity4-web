@@ -90,6 +90,14 @@ export function savedLotTextures(a){
     for(let i=0;i<count;i++){out.push({texture:v.getUint32(p,true),x:a[p+4],z:a[p+5],orientation:a[p+6],priority:a[p+7],color:[...a.subarray(p+8,p+12)]});p+=14;}start=end;
   }return out;
 }
+export function savedScenery(a,flora=false){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+  while(start<a.length){const size=v.getUint32(start,true),end=start+size;if(size<(flora?78:88)||end>a.length)throw Error('Invalid scenery record');const count=v.getUint32(start+32,true);let p=start+36;
+    for(let i=0;i<count;i++){const type=v.getUint8(p+12),key=v.getUint8(p+13);p+=16;const stride={1:1,2:2,3:4,7:4,8:8,9:4,11:1,12:1}[type];if(!stride)throw Error('Unsupported scenery property');let n=1;if(key===0x80||type===12){n=v.getUint32(p,true);p+=4;}p+=n*stride;if(p>=end)throw Error('Invalid scenery property');}
+    const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true),min=[16,20,24].map(x=>v.getFloat32(p+x,true)),max=flora?min:[28,32,36].map(x=>v.getFloat32(p+x,true)),orientation=a[p+(flora?37:40)];
+    out.push({tgi:[type,group,instance].map(hex).join('-'),min,max,orientation,state:flora?a[p+36]:a[p+41],visible:!!(a[start+19]&1),flora});start=end;
+  }return out;
+}
 function rgb565(v){return [(v>>11)*255/31,((v>>5)&63)*255/63,(v&31)*255/31,255];}
 export function fsh(a){
   if(ascii(a,0,4)!=='SHPI')throw Error('Not FSH');

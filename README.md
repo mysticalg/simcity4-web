@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.2.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.3.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It currently provides original terrain and partial saved city rendering, an S3D/FSH asset explorer, and an experimental city sandbox. Simulation rules and sandbox buildings are new provisional implementations, not a verified translation of the original engine.
 
@@ -20,6 +20,7 @@ All browser dependencies needed by the static page are vendored; no npm installa
 - DBPF 1.0 archive index and resource access, RefPack/QFS decompression.
 - Original `.sc4` terrain height fields at 64, 128 and 256 tile sizes.
 - Original saved buildings, cohort inheritance, network vertices/UVs and lot textures. Select a populated city such as London/Fulham, load its terrain, then click “Load original city geometry”.
+- Original static props and flora, with instanced models and merged ground geometry. Fulham opens by default when present. Animated scenery is incomplete.
 - S3D vertex/index/primitive/material/first-animation-frame parsing.
 - FSH DXT1/DXT3/DXT5 and several uncompressed texture formats.
 - Original resource search by model name or TGI; material texture resolution.
@@ -34,6 +35,6 @@ Left click/drag builds or inspects. Right drag orbits; middle drag pans; wheel z
 
 ## Remaining work
 
-See [research/STATUS.md](research/STATUS.md). Props, flora, lot overlays, complete networks, traffic, utilities, growth, desirability, pollution, finance, education, health, services, disasters, regions, advisors, missions, original interface and audio are incomplete or absent. The original city viewer renders geometry; it does not run that city's original simulation. Browser sandbox saves are a separate format.
+See [research/STATUS.md](research/STATUS.md). Animated scenery, exact flora states, lot overlays, complete networks, traffic, utilities, growth, desirability, pollution, finance, education, health, services, disasters, regions, advisors, missions, original interface and audio are incomplete or absent. The original city viewer renders geometry; it does not run that city's original simulation. Browser sandbox saves are a separate format.
 
 The repository contains code and format research only. It does not include the commercial game's executable, installer, data archives, textures, music or sounds. See [THIRD_PARTY.md](THIRD_PARTY.md).

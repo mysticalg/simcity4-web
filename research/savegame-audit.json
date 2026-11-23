@@ -3,6 +3,8 @@
   "buildings": 12295,
   "networks": 9343,
   "lotTiles": 28815,
+  "props": 134420,
+  "flora": 744617,
   "medianRoadHeightError": 0,
   "sampledRoadVertices": 37372
 }

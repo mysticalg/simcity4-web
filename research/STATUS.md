@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.2.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.3.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -21,6 +21,8 @@ DBPF, QFS, binary exemplars, FSH and S3D readers are in `dbpf.mjs`. The S3D read
 Terrain heights use a two-byte version followed by float32 samples in z-major rows (x varies fastest). An older reference described this incorrectly; saved network vertex alignment confirmed the corrected axes. Water uses a provisional 250m datum. Terrain surface colors are provisional; original terrain texture blending is absent.
 
 Version 0.2.0 reads saved buildings, follows exemplar/cohort inheritance, selects original S3D variants, places buildings using saved bounds and orientation, and renders saved network vertices/UVs and lot base textures. Fulham resolves all 530 building records and renders 498 network tiles and 986 lot tiles. Visual parity is not established. Props, flora, complete network/lot composition, camera-dependent BAT variant changes and material fidelity remain unfinished. The original city view has separate counts and disables sandbox simulation controls.
+
+Version 0.3.0 adds original static props and flora, model state/key type 4 and key type 5 resolution, and hardware instancing. Road/lot meshes are merged by material. Fulham renders 3,306 static props and all 3,121 flora records; 150 animated scenery records have no supported static S3D reference. No substitute models are used for those unresolved records. Flora growth/seasonal states and animation are not reproduced. The full data audit parses 134,420 props and 744,617 flora records across all supplied regions. Parsing success does not imply every record has a renderable asset.
 
 Sandbox tools, buildings and simulation formulas are provisional and separate from the original city data. They must never be represented as original simulation parity.
 
