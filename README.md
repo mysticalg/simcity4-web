@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.14.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.15.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. New development uses original lot recipes, footprints, textures and static props, with density controls and population-based stage eligibility. Full demand, regional allocation and the wider simulation remain incomplete. The asset explorer has been removed.
 
@@ -10,6 +10,7 @@ Version **0.14.0** — an incomplete native JavaScript/WebGL reconstruction of S
 - Open the hosted build directly. Its current game assets are bundled; no folder selection or upload is required.
 - Choose a region, select a city tile and click Enter city.
 - Select a zoning tool and its density. Original R/C zoning prices are §10/20/50 per tile; higher stages need enough population and, above the native cap, water. Rezoning preserves existing buildings.
+- New branches connect to ordinary saved roads with matching native junction textures and lane paths. Removing a branch restores the source road; demolished source neighbors can be replaced with new roads.
 - View road traffic to inspect local car commuting. Road connections and congestion affect access to finite local job capacity; query homes and roads for details. Public transport and regional commuting remain unfinished.
 - Click or hold Raise/Lower to edit terrain. Level keeps the height where you start the stroke. Each changed application costs §10; map edits save with your city.
 - Region selection downloads the compressed index (approximately 4.65 MB) and thumbnail images. Opening Fulham adds one 3.7 MB asset pack; other city content loads on demand.
@@ -32,6 +33,7 @@ All browser dependencies needed by the static page are vendored; no npm installa
 - Native WebGL terrain and model rendering using Three.js.
 - Road, residential, commercial, industrial, power plant, power line, park and demolition tools.
 - Original building models for new residential/commercial/industrial development and power facilities, with native capacity/consumption and facility footprint data.
+- Live junction updates for ordinary saved roads, including native textures/path turns, source-neighbor demolition, restoration and persistence (research/ROAD-TOPOLOGY.md).
 - Native lane-path-based local car commuting, road volume overlay and household job-access queries. Source speeds/capacities/congestion and raw travel cutoff; allocation and demographic defaults remain reconstructed (research/TRAFFIC.md).
 - Connected power circuits, transmission lines, isolated loads, capacity shortages and funding controls. Production, costs, two-tile radiation distance and the funding response curve come from the supplied game data; complete native distribution behavior remains unverified.
 - Eight original power facility definitions, native placement/monthly/demolition costs and native difficulty starting funds.

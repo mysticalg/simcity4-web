@@ -1,10 +1,10 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.14.0. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.15.0. Full-game parity: **not achieved**.
 
 ## Current milestone
 
-v0.14.0 adds native road-path-based local job routing, traffic overlays and commute queries; see [TRAFFIC.md](TRAFFIC.md) for evidence, tests and limitations. Full demand, native occupancy/abandonment, multimodal and regional commuting remain unfinished.
+v0.15.0 adds existing-city road junction updates for new branches and demolition, matching native textures and directed paths; see [ROAD-TOPOLOGY.md](ROAD-TOPOLOGY.md). v0.14.0 added native road-path-based local job routing, traffic overlays and commute queries; see [TRAFFIC.md](TRAFFIC.md). Full demand, native occupancy/abandonment, multimodal and regional commuting remain unfinished.
 
 ## Evidence from the supplied copy
 
