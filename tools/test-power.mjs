@@ -10,3 +10,7 @@ assert.equal(solvePower([source,{id:'corner',x:3,z:2,consumption:10}]).states.ge
 result=solvePower([source,...[0,1,2].map(z=>({id:'consumer'+z,x:2,z,consumption:100}))]);assert.equal(result.demand,300);assert.equal(result.states.get('consumer0').brownout,true);assert(Math.abs(result.states.get('consumer0').ratio-2/3)<1e-8);
 assert.equal(responseCurve(game.powerFundingCurve,50),25);assert.equal(responseCurve(game.powerFundingCurve,100),100);assert.equal(responseCurve(game.powerFundingCurve,120),110);assert.equal(responseCurve(game.powerFundingCurve,0),0);
 console.log('Native data values, clamped radiation bounds, connected/disconnected supply, overload and funding: passed');
+
+const endpointSource={id:'source',x:0,z:0,generation:100},endpointLoad={id:'load',x:11,z:0,consumption:10},spans=[{id:'wireA',x:1,z:0,line:true,links:['pole:1','pole:2']},{id:'wireB',x:10,z:0,line:true,links:['pole:2','pole:3']}];
+assert(solvePower([endpointSource,...spans,endpointLoad]).states.get('load').powered,'Saved endpoint references join a native span');
+assert(!solvePower([endpointSource,spans[0],{...spans[1],links:['pole:4','pole:5']},endpointLoad]).states.get('load').powered,'Independent spans must stay disconnected');

@@ -23,6 +23,7 @@ jobs:
           node tools/test-power.mjs
           node tools/test-imported-city.mjs
           node tools/test-water.mjs
+          node tools/test-saved-utilities.mjs
       - name: Assemble browser files
         run: |
           mkdir -p _site

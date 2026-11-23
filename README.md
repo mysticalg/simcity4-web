@@ -1,6 +1,6 @@
 # SimCity 4 browser reconstruction
 
-Version **0.7.1** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
+Version **0.8.0** — an incomplete native JavaScript/WebGL reconstruction of SimCity 4 Deluxe.
 
 **This does not yet run the full original game.** It starts with region selection, opens original city terrain/content, and supports experimental construction and simulation. Simulation rules and new construction buildings remain provisional implementations, not a verified translation of the original engine. The asset explorer has been removed.
 
@@ -47,4 +47,4 @@ The repository now includes browser packs built from the supplied copy's support
 
 Night lighting: select **Lighting → Night · window lights** in a city. Original transparent night overlays illuminate individual windows and fixtures. Day/Night choice is remembered. Physical light spill and native power-based lighting are still pending.
 
-Water: build a powered water tower or pump, lay pipes, and choose **View water network** to inspect coverage. Water supply, funding and pipes are saved with your city. Existing saved-city utility simulation remains unfinished.
+Water: build a powered water tower or pump, lay pipes, and choose **View water network** to inspect coverage. Water supply, funding and pipes are saved with your city. Original saved pipes and building utility supply/demand now participate in the live graphs. Neighbor utility deals and full native utility simulation remain unfinished.

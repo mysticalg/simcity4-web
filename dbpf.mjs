@@ -90,6 +90,35 @@ export function savedNetworks(a){
     out.push({id:'network:'+start,tgi:[type,group,instance].map(hex).join('-'),vertices,texture,wealth,base,orientation,crossings});start=end;
   }return out;
 }
+export function savedPowerLines(a){
+ const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+ while(start<a.length){
+  if(start+85>a.length||v.getUint32(start,true)!==85)throw Error('Unsupported power-line record size');
+  if(v.getUint16(start+12,true)!==2||v.getUint16(start+14,true)!==4||v.getUint32(start+32,true)!==0)throw Error('Unsupported power-line layout');
+  const position=[48,52,56].map(i=>v.getFloat32(start+i,true)),xTile=v.getUint32(start+60,true),zTile=v.getUint32(start+64,true),poles=[];
+  for(const i of[69,77]){const memory=v.getUint32(start+i,true),type=v.getUint32(start+i+4,true);if(memory){if(type!==0x09c05c6a)throw Error('Unexpected power-line endpoint type');poles.push(memory);}}
+  if(xTile>255||zTile>255||!position.every(Number.isFinite)||Math.abs(position[0]/16-.5-xTile)>.01||Math.abs(position[2]/16-.5-zTile)>.01)throw Error('Power-line coordinate mismatch');
+  out.push({id:'wire:'+start,memory:v.getUint32(start+8,true),xTile,zTile,position,poles});start+=85;
+ }return out;
+}
+export function savedPipes(a){
+  const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
+  while(start<a.length){
+    if(start+40>a.length)throw Error('Truncated pipe header');
+    const size=v.getUint32(start,true),end=start+size;if(size<300||end>a.length)throw Error('Invalid pipe record size');
+    if(v.getUint16(start+12,true)!==3||v.getUint16(start+14,true)!==3)throw Error('Unsupported pipe version');
+    const count=v.getUint32(start+36,true);let p=start+40;if(count>10000)throw Error('Invalid pipe property count');
+    for(let i=0;i<count;i++){if(p+16>end)throw Error('Truncated pipe property');const type=a[p+12],key=a[p+13],stride={1:1,2:2,3:4,7:4,8:8,9:4,11:1,12:1}[type];if(!stride)throw Error('Unsupported pipe property type');p+=16;let n=1;if(key===0x80||type===12){n=v.getUint32(p,true);p+=4;}p+=n*stride;if(p>end-250)throw Error('Pipe property outside record');}
+    const group=v.getUint32(p,true),type=v.getUint32(p+4,true),instance=v.getUint32(p+8,true);p+=13;
+    const matrix=Array.from({length:9},(_,i)=>v.getFloat32(p+i*4,true));p+=36;
+    const position=[0,4,8].map(i=>v.getFloat32(p+i,true));p+=12;const vertices=[];
+    for(let i=0;i<4;i++){vertices.push({position:[0,4,8].map(k=>v.getFloat32(p+k,true)),uv:[12,16].map(k=>v.getFloat32(p+k,true))});p+=24;}
+    const texture=v.getUint32(p,true),orientation=a[p+9],networkType=a[p+13],connections=[...a.subarray(p+14,p+18)];
+    const xTile=v.getUint32(end-43,true),zTile=v.getUint32(end-39,true),heights=[0,4,8,12,16].map(k=>v.getFloat32(end-32+k,true));
+    if(v.getUint32(end-12,true)!==0x49c05b9f||xTile>255||zTile>255||networkType!==4||![...position,...matrix,...heights,...vertices.flatMap(v=>v.position)].every(Number.isFinite))throw Error('Invalid pipe layout');
+    out.push({id:'pipe:'+start,xTile,zTile,tgi:[type,group,instance].map(hex).join('-'),position,matrix,vertices,texture,orientation,connections,heights});start=end;
+  }return out;
+}
 export function savedLotTextures(a){
   const v=new DataView(a.buffer,a.byteOffset,a.byteLength),out=[];let start=0;
   while(start<a.length){const size=v.getUint32(start,true),end=start+size;if(size<77||end>a.length)throw Error('Invalid lot texture record');const count=v.getUint32(start+73,true);let p=start+77;if(p+count*14!==end)throw Error('Unsupported lot texture layout');

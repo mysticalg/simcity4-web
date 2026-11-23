@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 — 2026-11-23
+
+- Import original underground pipes and connect them to new water facilities.
+- Include original building utility supply/demand and lot conduction in live utility graphs; join saved power-line spans by pole references.
+- Remove original pipes independently of surface structures and persist those edits.
+- Query current computed utility status and validate all supplied pipe/power-line layouts.
+- Neighbor deals, original utility finances and native wire visuals remain unfinished.
+
 ## 0.7.1 — 2026-11-23
 
 - Start unsaved cities at full power/water funding; preserve each saved city’s budget settings when returning.

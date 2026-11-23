@@ -17,3 +17,7 @@ result=solveWater(pipes,[source],[{...home,consumption:3000}]);assert.equal(resu
 result=solveWater([],[source],[{...home,x:7},{...home,id:'outside',x:8}]);assert.equal(result.states.get('home').watered,true);assert.equal(result.states.get('outside').watered,false);
 result=solveWater([],[source,{id:'source2',x:14,z:0,generation:100}],[{id:'overlap',x:7,z:0,consumption:200}]);assert.equal(result.demand,200);assert.equal(result.circuits.reduce((n,c)=>n+c.demand,0),200,'Overlapping supply must not double-count demand');assert.equal(result.circuits.length,2);
 console.log('Native water data, connected pipes, cut connections, unpowered supply, shortages, radius boundary and overlapping coverage: passed');
+
+const closedPipes=[{id:'a',x:0,z:0,connections:[0,0,0,0]},{id:'b',x:1,z:0,connections:[2,0,0,0]}];
+assert.equal(solveWater(closedPipes,[],[],{radius:0}).circuits.length,2,'Native closed connectors do not join adjacent pipes');
+assert.equal(solveWater([closedPipes[0],{...closedPipes[1],connections:undefined}],[],[],{radius:0}).circuits.length,1,'New construction updates an adjacent junction');

@@ -3,9 +3,10 @@
 export function solveWater(pipes,sources,consumers,{radius=7}={}){
  const nodes=[...pipes.map(p=>({...p,pipe:true})),...sources],parent=nodes.map((_,i)=>i),byTile=new Map();
  const find=i=>{while(parent[i]!==i){parent[i]=parent[parent[i]];i=parent[i];}return i;};
+ const canLink=(i,j,dx,dz)=>{const a=nodes[i],b=nodes[j];if((!dx&&!dz)||!a.pipe||!b.pipe||!a.connections||!b.connections)return true;const dir=dx===-1?0:dz===-1?1:dx===1?2:3;return a.connections[dir]>0&&b.connections[(dir+2)%4]>0;};
  const join=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent[b]=a;};
  nodes.forEach((n,i)=>{for(let z=n.z;z<n.z+(n.depth||1);z++)for(let x=n.x;x<n.x+(n.width||1);x++){const k=x+','+z;if(!byTile.has(k))byTile.set(k,[]);byTile.get(k).push(i);}});
- for(const[k,ids]of byTile){const[x,z]=k.split(',').map(Number);for(const i of ids)for(const[dx,dz]of[[0,0],[1,0],[-1,0],[0,1],[0,-1]])for(const j of byTile.get((x+dx)+','+(z+dz))||[])join(i,j);}
+ for(const[k,ids]of byTile){const[x,z]=k.split(',').map(Number);for(const i of ids)for(const[dx,dz]of[[0,0],[1,0],[-1,0],[0,1],[0,-1]])for(const j of byTile.get((x+dx)+','+(z+dz))||[])if(canLink(i,j,dx,dz))join(i,j);}
  const circuits=new Map(),coverage=new Map();nodes.forEach((n,i)=>{const id=find(i);if(!circuits.has(id))circuits.set(id,{id,supply:0,demand:0,pipes:[],sources:[],consumers:[]});const c=circuits.get(id);if(n.pipe)c.pipes.push(n.id);else{c.sources.push(n.id);c.supply+=Math.max(0,Number(n.generation)||0);}});
  for(const[k,ids]of byTile){const[x,z]=k.split(',').map(Number),id=find(ids[0]);for(let dz=-radius;dz<=radius;dz++)for(let dx=-radius;dx<=radius;dx++){const key=(x+dx)+','+(z+dz);if(!coverage.has(key))coverage.set(key,new Set());coverage.get(key).add(id);}}
  const states=new Map();let demand=0;

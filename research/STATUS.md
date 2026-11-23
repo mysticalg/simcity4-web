@@ -1,6 +1,6 @@
 # Reconstruction status
 
-Updated 2026-11-23. Current release: 0.7.1. Full-game parity: **not achieved**.
+Updated 2026-11-23. Current release: 0.8.0. Full-game parity: **not achieved**.
 
 ## Evidence from the supplied copy
 
@@ -58,3 +58,6 @@ Validation: native power and imported-city unit checks; browser region flow, pow
 
 
 Version 0.7.0 adds water infrastructure for new construction: original tower and two pump definitions/models, power-dependent output, connected underground pipes, service coverage, funding, consumption, upkeep, separate pipe demolition and version-4 construction snapshots. The surface is preserved when placing/removing pipes. A water network view batches its pipe geometry. Native parameter evidence and limits are in WATER.md. Existing saved-city pipes and utility simulation remain unported. No claim of complete native water simulation is made; native pollution, aging, disasters, source depletion and growth constraints still need integration. Current low-wealth/provisional level-1..3 growth is unchanged; water service is reported rather than imposing an invented stage requirement.
+
+
+Version 0.8.0 connects saved-city utility records to the live graphs. The parser validates all 1,483 native pipes in six cities and all 265 power-line tiles in six cities. Original lot footprints conduct power, original building exemplars contribute utility supply/demand, and saved pole endpoint references connect power-line spans. New pumps use saved pipe networks; native pipe demolition is separate from surface demolition and persists in nativeEdits. Query uses recomputed utility states rather than presenting old source flags as live simulation. Fulham fixture: 6001 generation (coal 6000 plus fire station 1), 3052 power demand, 7664 water demand, 153 pipes and zero local water producers. Neighbor utility deals are not decoded, so the saved watered flags are not treated as invented supply. Existing-city finances, native wire/pole visuals and wire editing, utility wear/pollution/source availability and exact native graph/shortage allocation remain unfinished. See SAVED-UTILITIES.md.

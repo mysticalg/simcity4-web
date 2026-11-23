@@ -1,0 +1,20 @@
+{
+  "total": 1483,
+  "cities": 6,
+  "connections": {
+    "0": 2978,
+    "1": 62,
+    "2": 2822,
+    "3": 54,
+    "11": 16
+  },
+  "counts": {
+    "Berlin/City - Konradshohe.sc4": 403,
+    "London/City - Fulham.sc4": 153,
+    "London/City - Kensington.sc4": 291,
+    "Timbuktu/City - Big City Tutorial.sc4": 483,
+    "Timbuktu/City - Making Money Tutorial.sc4": 53,
+    "Timbuktu/City - Rush Hour Tutorial.sc4": 100
+  },
+  "vertexTileAgreement": true
+}

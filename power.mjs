@@ -10,6 +10,7 @@ export function solvePower(objects,{radius=2}={}){
   const nodes=objects.filter(o=>o.conducts!==false),parent=nodes.map((_,i)=>i),rank=new Uint8Array(nodes.length);
   const find=i=>{while(parent[i]!==i){parent[i]=parent[parent[i]];i=parent[i];}return i;};
   function union(a,b){a=find(a);b=find(b);if(a===b)return;if(rank[a]<rank[b])[a,b]=[b,a];parent[b]=a;if(rank[a]===rank[b])rank[a]++;}
+  const links=new Map();nodes.forEach((n,i)=>{for(const id of n.links||[]){if(links.has(id))union(i,links.get(id));else links.set(id,i);}});
   const occupancy=new Map(),bounds=n=>({minX:n.x,minZ:n.z,maxX:n.x+(n.width||1)-1,maxZ:n.z+(n.depth||1)-1});
   nodes.forEach((n,i)=>{const b=bounds(n);for(let z=b.minZ;z<=b.maxZ;z++)for(let x=b.minX;x<=b.maxX;x++){const k=x+','+z;if(!occupancy.has(k))occupancy.set(k,[]);occupancy.get(k).push(i);}});
   nodes.forEach((n,i)=>{const b=bounds(n),r=n.line?1:radius;for(let z=b.minZ-r;z<=b.maxZ+r;z++)for(let x=b.minX-r;x<=b.maxX+r;x++){if(n.line&&(x<b.minX||x>b.maxX)&&(z<b.minZ||z>b.maxZ))continue;for(const j of occupancy.get(x+','+z)||[])union(i,j);}});

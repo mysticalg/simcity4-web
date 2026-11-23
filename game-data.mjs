@@ -1,5 +1,5 @@
 // Definitions compiled from the original exemplar/cohort bank, including bundled data.
-import {hex} from './dbpf.mjs?v=0.7.1';
+import {hex} from './dbpf.mjs?v=0.8.0';
 export const IDS={utilities:'6534284a-e7e2c2db-c911e35b',budget:'6534284a-e7e2c2db-0bff6824',traffic:'6534284a-e7e2c2db-c9133286',pipes:'6534284a-084344e0-095117db'};
 const array=x=>Array.isArray(x)?x:[x];
 const number=(x,fallback=0)=>Number.isFinite(Number(x))?Number(x):fallback;
